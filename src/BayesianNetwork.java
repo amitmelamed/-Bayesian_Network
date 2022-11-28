@@ -16,6 +16,10 @@ import java.util.ArrayList;
  * For example, a Bayesian network could represent the probabilistic relationships between diseases and symptoms.
  * Given symptoms, the network can be used to compute the probabilities of the presence of various diseases.
  * Source: Wikipedia
+ *
+ * Our network will be implemented by Adjacency list graph.
+ * where our network holds Array of nodes.
+ * and each node have Array of pointers to his parents and childrens (Outer edges and Inner edges).
  */
 
 public class BayesianNetwork {
@@ -215,6 +219,5 @@ public class BayesianNetwork {
         }
         return true;
     }
-
 }
 
