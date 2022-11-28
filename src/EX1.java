@@ -12,7 +12,6 @@ public class EX1 {
 
     public static void main(String[] args) {
         BayesianNetwork bayesianNetwork=new BayesianNetwork("src/alarm_net.xml");
-        bayesianNetwork.removeVariable("M");
         bayesianNetwork.printNetwork();
     }
 }

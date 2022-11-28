@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The Variable class is representing Variable in a Bayesian Network.
@@ -13,9 +14,9 @@ import java.util.ArrayList;
  */
 public class Variable {
     private final String name;
-    private ArrayList<Variable> parents;
-    private ArrayList<Variable> childrens;
-    private ArrayList<String> outcomes;
+    private final ArrayList<Variable> parents;
+    private final ArrayList<Variable> childrens;
+    private final ArrayList<String> outcomes;
     private ArrayList<Double> CPT;
 
 
@@ -27,7 +28,11 @@ public class Variable {
     public Variable(String name, ArrayList<String> outcomes) {
         this.name = name;
         this.outcomes = outcomes;
+        parents = new ArrayList<>();
+        childrens = new ArrayList<>();
+        CPT= new ArrayList<>();
     }
+
 
     /**
      * Getters
@@ -48,15 +53,21 @@ public class Variable {
         return CPT;
     }
 
-    /**
-     * Setters
-     * @param probabilities
-     */
-    public void SetCPT(ArrayList<Double> probabilities)
-    {
-        CPT=probabilities;
-    }
 
+    /**
+     * Input is string in the form "Double Double ... Double"
+     * The function will take the input from the string,
+     * and inset the values into the CPT table of our current variable.
+     * @param CPT_String
+     */
+    public void SetCPT(String CPT_String)
+    {
+        String[] numbers = CPT_String.split(" ");
+        CPT = new ArrayList<>();
+        for(String number : numbers){
+            CPT.add(Double.parseDouble(number));
+        }
+    }
 
     /**
      * Add Value to variable functions
@@ -65,25 +76,32 @@ public class Variable {
     {
         outcomes.add(outcome);
     }
+
+    /**
+     * Add parrent - Called from addEdge function from BayesianNetwork Class.
+     */
     public void addParent(Variable parent)
     {
         parents.add(parent);
     }
-    public void addChild(Variable child)
-    {
-        parents.add(child);
-    }
 
     /**
-     * Print function
+     * Add Child - Called from addEdge function from BayesianNetwork Class.
      */
-    public void printVariable() {
-        System.out.println("Variable Name : " + name );
-        for (int i = 0; i < outcomes.size(); i++) {
-            System.out.println("Outcome : " + outcomes.get(i) );
-        }
+    public void addChild(Variable child)
+    {
+        childrens.add(child);
     }
 
+
+    /**
+     * Convert variable data into string:
+     * Variable Name:
+     * Outcomes:
+     * Parents:
+     * Children's:
+     * CPT:
+     */
     @Override
     public String toString()
     {
@@ -91,7 +109,21 @@ public class Variable {
         for (int i = 0; i < outcomes.size(); i++) {
             variableString += ("Outcome : " + outcomes.get(i) + '\n');
         }
+        variableString +=("Parents:");
+        for (int i = 0; i < parents.size(); i++) {
+            variableString +=(parents.get(i).getName() + ' ') ;
+        }
+        variableString += '\n';
+        variableString +=("Children's:");
+        for (int i = 0; i < childrens.size(); i++) {
+            variableString +=(childrens.get(i).getName()+ ' ');
+        }
+        variableString += "\nCPT:";
+        for (int i = 0; i < CPT.size(); i++) {
+            variableString+=CPT.get(i).toString();
+            variableString+=' ';
+        }
+        variableString+='\n';
         return variableString;
-
     }
 }

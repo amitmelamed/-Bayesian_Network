@@ -8,12 +8,24 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.util.ArrayList;
 
-
+/**
+ * A Bayesian network is a probabilistic graphical model that represents a set of variables and their conditional
+ * dependencies via a directed acyclic graph (DAG).
+ * Bayesian networks are ideal for taking an event that occurred and predicting the likelihood that any one of several
+ * possible known causes was the contributing factor.
+ * For example, a Bayesian network could represent the probabilistic relationships between diseases and symptoms.
+ * Given symptoms, the network can be used to compute the probabilities of the presence of various diseases.
+ * Source: Wikipedia
+ */
 
 public class BayesianNetwork {
     private static ArrayList<Variable> network;
 
     /**Constructor
+     * Input: XML destination in the form of string
+     * The constructor will define new network,
+     * and will call to ImportValuesFromXML
+     * to import the data from out XML file into our network
      * @param XML_DESTENATION
      */
     public BayesianNetwork(String XML_DESTENATION) {
@@ -27,6 +39,9 @@ public class BayesianNetwork {
      * 2.For each Variable create new Variable Instance
      * 2.1 Add to Variable Instance his outcomes
      * 2.2 Add Variable to Our network List.
+     * 3.Go over all Definitions:
+     * 3.1 Add edges
+     * 3.2 add CPT Table
      *
      *  **Using this function will Reset our network**
      *  Used Resources:
@@ -60,6 +75,44 @@ public class BayesianNetwork {
                     network.add(variable);
                 }
             }
+
+            //Go over all definitions
+            nodeList = doc.getElementsByTagName("DEFINITION");
+            // nodeList is not iterable, so we are using for loop
+            for (int itr = 0; itr < nodeList.getLength(); itr++) {
+                Node node = nodeList.item(itr);
+                if (node.getNodeType() == Node.ELEMENT_NODE) {
+                    Element eElement = (Element) node;
+                    //Import FOR node from XML into String
+                    String to_string_node;
+                    NodeList to_nodes=eElement.getElementsByTagName("FOR");
+                    to_string_node = to_nodes.item(0).getTextContent();
+
+                    //Import GIVEN nodes from XML into Arraylist of String
+                    ArrayList<String> given_strings=new ArrayList<>();
+                    NodeList given_nodes=eElement.getElementsByTagName("GIVEN");
+                    for (int i = 0; i < given_nodes.getLength(); i++) {
+                        given_strings.add(given_nodes.item(i).getTextContent());
+                    }
+
+                    //Add edges (chiled,parent) using add edge function
+                    for (String given_string : given_strings) {
+                        addEdge(to_string_node, given_string);
+                    }
+
+                    //Table string Creation and sending it to relevant Variable node to create CPT table
+                    NodeList Table_Node_List=eElement.getElementsByTagName("TABLE");
+                    String tableString = Table_Node_List.item(0).getTextContent();
+                    for (int i = 0; i < network.size(); i++) {
+                        if (network.get(i).getName().equals(to_string_node))
+                        {
+                            network.get(i).SetCPT(tableString);
+                        }
+                    }
+
+
+                }
+            }
         }
         catch(Exception e)
         {
@@ -75,7 +128,6 @@ public class BayesianNetwork {
             System.out.println(network.get(i).toString());
         }
     }
-
     /**
      * Add new Variable to our network
      * @param variable
@@ -103,6 +155,65 @@ public class BayesianNetwork {
                 removeVariable(variableName);
             }
         }
+    }
+
+    /**
+     * Algorithm for add edge in the Network
+     * 1.Check for valid input
+     * 2.Find nodes and add parent and childes edges
+     * @param from
+     * @param to
+     */
+    public static void addEdge(String from,String to)
+    {
+        //Check for valid input
+        if(!addEdgeValidInputCheck(from, to))
+        {
+            return;
+        }
+        //Find nodes and add parent and childes edges
+        for (int i = 0; i < network.size(); i++) {
+            for (int j = 0; j < network.size(); j++) {
+                if(network.get(i).getName().equals(from) && network.get(j).getName().equals(to))
+                {
+                    network.get(i).addParent(network.get(j));
+                    network.get(j).addChild(network.get(i));
+                }
+            }
+        }
+    }
+
+    /**
+     * Function to check valid input in the addEdge function
+     * @param from
+     * @param to
+     * @return
+     */
+    private static boolean addEdgeValidInputCheck(String from, String to)
+    {
+        //First Check if inputs are VALID
+        boolean from_exist=false,to_exist=false;
+        for (int i = 0; i < network.size(); i++) {
+            if(network.get(i).getName().equals(from))
+            {
+                from_exist=true;
+            }
+            if(network.get(i).getName().equals(to))
+            {
+                to_exist=true;
+            }
+        }
+        if(!from_exist)
+        {
+            System.out.println("From node does not exist");
+            return false;
+        }
+        if(!to_exist)
+        {
+            System.out.println("From node does not exist");
+            return false;
+        }
+        return true;
     }
 
 }
