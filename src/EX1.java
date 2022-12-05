@@ -10,8 +10,9 @@ import java.util.ArrayList;
 public class EX1 {
 
 
-    public static void main(String[] args) {
-        BayesianNetwork bayesianNetwork=new BayesianNetwork("src/alarm_net.xml");
-        bayesianNetwork.printNetwork();
+    public static void main(String[] args) throws Exception {
+        BayesianNetwork network= new BayesianNetwork("src/alarm_net.xml");
+        Query query=new Query("P(B=T|J=T,M=T),3",network);
+        System.out.println(query.toString());
     }
 }

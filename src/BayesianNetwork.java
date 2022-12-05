@@ -24,6 +24,7 @@ import java.util.ArrayList;
 
 public class BayesianNetwork {
     private static ArrayList<Variable> network;
+    private ArrayList<Query> queries;
 
     /**Constructor
      * Input: XML destination in the form of string
@@ -34,18 +35,19 @@ public class BayesianNetwork {
      */
     public BayesianNetwork(String XML_DESTENATION) {
         network = new ArrayList<>();
+        queries=new ArrayList<>();
         ImportValuesFromXML(XML_DESTENATION);
     }
     /**
-     * Function to read from our Values from XML file
+     * Function to read from our Values from XML file.
      * Algorithm:
-     * 1.Import file data using file class
-     * 2.For each Variable create new Variable Instance
-     * 2.1 Add to Variable Instance his outcomes
+     * 1.Import file data using file class.
+     * 2.For each Variable create new Variable Instance.
+     * 2.1 Add to Variable Instance his outcomes.
      * 2.2 Add Variable to Our network List.
      * 3.Go over all Definitions:
-     * 3.1 Add edges
-     * 3.2 add CPT Table
+     * 3.1 Add edges.
+     * 3.2 add CPT Table.
      *
      *  **Using this function will Reset our network**
      *  Used Resources:
@@ -125,7 +127,7 @@ public class BayesianNetwork {
     }
 
     /**
-     * Function to print our network data
+     * Function to print our network data.
      */
     public void printNetwork(){
         for (int i = 0; i < network.size(); i++) {
@@ -133,7 +135,7 @@ public class BayesianNetwork {
         }
     }
     /**
-     * Add new Variable to our network
+     * Add new Variable to our network.
      * @param variable
      */
     public void addVariable(Variable variable)
@@ -146,7 +148,7 @@ public class BayesianNetwork {
      * Remove function remove all appearance.
      * Algorithm:
      * 1.Iterate over all variables.
-     * 1.1 if found -> remove instance from network and call function recursivly to find other appearance of variable name
+     * 1.1 if found -> remove instance from network and call function recursivly to find other appearance of variable name.
      * @param variableName
      */
     public void removeVariable(String variableName)
@@ -162,9 +164,9 @@ public class BayesianNetwork {
     }
 
     /**
-     * Algorithm for add edge in the Network
-     * 1.Check for valid input
-     * 2.Find nodes and add parent and childes edges
+     * Algorithm for add edge in the Network:
+     * 1.Check for valid input.
+     * 2.Find nodes and add parent and childes edges.
      * @param from
      * @param to
      */
@@ -188,7 +190,7 @@ public class BayesianNetwork {
     }
 
     /**
-     * Function to check valid input in the addEdge function
+     * Function to check valid input in the addEdge function.
      * @param from
      * @param to
      * @return
@@ -218,6 +220,28 @@ public class BayesianNetwork {
             return false;
         }
         return true;
+    }
+
+    /**
+     * Get Variable by name function.
+     * Throws expection if the variable not found.
+     * In case of Duplicate variable -> return the first one.
+     * @param name
+     * @return
+     * @throws Exception
+     */
+    public Variable getVariableByName(String name) throws Exception {
+        for (Variable variable : network) {
+            if (variable.getName().equals(name)) {
+                return variable;
+            }
+        }
+        throw new Exception("Variable Not Found");
+    }
+
+    public void addQuery(Query query)
+    {
+        queries.add(query);
     }
 }
 
