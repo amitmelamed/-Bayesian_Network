@@ -1,5 +1,7 @@
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The Variable class is representing Variable in a Bayesian Network.
@@ -18,6 +20,7 @@ public class Variable {
     private final ArrayList<Variable> childrens;
     private final ArrayList<String> outcomes;
     private ArrayList<Double> CPT;
+
 
 
     /**
@@ -125,5 +128,43 @@ public class Variable {
         }
         variableString+='\n';
         return variableString;
+    }
+
+
+    /**
+     * This function input is List of Strings representing our given outcome.
+     * Output is the probability of the outcome to happen according to our CPT.
+     * @param given_outcomes
+     * @return
+     */
+    public double getElementFromCPT(ArrayList<String> given_outcomes)
+    {
+        int index =0;
+        ArrayList <Integer> list = new ArrayList<>();
+        for (int i = 0; i < outcomes.size(); i++) {
+            if (given_outcomes.get(0).equals(outcomes.get(i)))
+            {
+                list.add(i);
+            }
+        }
+
+        for (int i = 1; i < given_outcomes.size(); i++) {
+            for (int j = 0; j < parents.size(); j++) {
+                for (int k = 0; k < parents.get(j).outcomes.size(); k++) {
+                    if(given_outcomes.get(i).equals(parents.get(j).outcomes.get(k)))
+                    {
+                        list.add(k);
+                        given_outcomes.set(i,"");
+                    }
+                }
+            }
+        }
+        System.out.println(list.toString());
+
+        index+=list.get(0);
+        for (int i = 1; i < list.size(); i++) {
+            index+= list.get(i)*outcomes.size()*(i);
+        }
+        return CPT.get(index);
     }
 }

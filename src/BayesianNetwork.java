@@ -5,7 +5,10 @@ import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -31,12 +34,28 @@ public class BayesianNetwork {
      * The constructor will define new network,
      * and will call to ImportValuesFromXML
      * to import the data from out XML file into our network
-     * @param XML_DESTENATION
+     * @param InputDestination
      */
-    public BayesianNetwork(String XML_DESTENATION) {
+    public BayesianNetwork(String InputDestination) {
         network = new ArrayList<>();
         queries=new ArrayList<>();
-        ImportValuesFromXML(XML_DESTENATION);
+        BufferedReader reader;
+
+        try {
+            reader = new BufferedReader(new FileReader(InputDestination));
+            String line = reader.readLine();
+            ImportValuesFromXML("src/"+line);
+            line = reader.readLine();
+            while (line != null) {
+                // read next line
+                Query query=new Query(line,this);
+                line = reader.readLine();
+            }
+
+            reader.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
     /**
      * Function to read from our Values from XML file.
@@ -132,6 +151,9 @@ public class BayesianNetwork {
     public void printNetwork(){
         for (int i = 0; i < network.size(); i++) {
             System.out.println(network.get(i).toString());
+        }
+        for (int i = 0; i < queries.size(); i++) {
+            System.out.println(queries.get(i).toString());
         }
     }
     /**
@@ -239,6 +261,10 @@ public class BayesianNetwork {
         throw new Exception("Variable Not Found");
     }
 
+    /**
+     * Add Query to our network
+     * @param query
+     */
     public void addQuery(Query query)
     {
         queries.add(query);
