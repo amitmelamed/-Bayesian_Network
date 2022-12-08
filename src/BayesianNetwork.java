@@ -134,8 +134,6 @@ public class BayesianNetwork {
                             network.get(i).SetCPT(tableString);
                         }
                     }
-
-
                 }
             }
         }

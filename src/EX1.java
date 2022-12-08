@@ -11,6 +11,59 @@ public class EX1 {
 
 
     public static void main(String[] args) throws Exception {
+        //ExampleNetwork_1();
+        //ExampleNetwork_2();
+
+
+    }
+
+    private static void ExampleNetwork_2() throws Exception {
+        BayesianNetwork network= new BayesianNetwork("src/input.txt");
+        ArrayList<String> list=new ArrayList<>();
+
+        list.add("T");
+        list.add("T");
+        list.add("T");
+        list.add("T");
+        System.out.println(network.getVariableByName("A").getElementFromCPT(list));
+        list=new ArrayList<>();
+        list.add("F");
+        list.add("T");
+        list.add("T");
+        System.out.println(network.getVariableByName("A").getElementFromCPT(list));
+        list=new ArrayList<>();
+        list.add("T");
+        list.add("F");
+        list.add("T");
+        System.out.println(network.getVariableByName("A").getElementFromCPT(list));
+        list=new ArrayList<>();
+        list.add("F");
+        list.add("F");
+        list.add("T");
+        System.out.println(network.getVariableByName("A").getElementFromCPT(list));
+        list=new ArrayList<>();
+        list.add("T");
+        list.add("T");
+        list.add("F");
+        System.out.println(network.getVariableByName("A").getElementFromCPT(list));
+        list=new ArrayList<>();
+        list.add("F");
+        list.add("T");
+        list.add("F");
+        System.out.println(network.getVariableByName("A").getElementFromCPT(list));
+        list=new ArrayList<>();
+        list.add("T");
+        list.add("F");
+        list.add("F");
+        System.out.println(network.getVariableByName("A").getElementFromCPT(list));
+        list=new ArrayList<>();
+        list.add("F");
+        list.add("F");
+        list.add("F");
+        System.out.println(network.getVariableByName("A").getElementFromCPT(list));
+    }
+
+    private static void ExampleNetwork_1() throws Exception {
         BayesianNetwork network= new BayesianNetwork("src/input.txt");
         ArrayList<String> list=new ArrayList<>();
         //000
@@ -79,72 +132,60 @@ public class EX1 {
         list.add("two");
         System.out.println(network.getVariableByName("Son").getElementFromCPT(list)+" 0.17");
 
-        //101
+        //111
         list=new ArrayList<>();
         list.add("v2");
         list.add("False");
         list.add("two");
         System.out.println(network.getVariableByName("Son").getElementFromCPT(list)+" 0.18");
 
-        //201
+        //211
         list=new ArrayList<>();
         list.add("v3");
         list.add("False");
         list.add("two");
         System.out.println(network.getVariableByName("Son").getElementFromCPT(list)+" 0.65");
 
-        //201
+        //002
         list=new ArrayList<>();
         list.add("v1");
         list.add("True");
         list.add("three");
         System.out.println(network.getVariableByName("Son").getElementFromCPT(list)+" 0.19");
 
+        //102
+        list=new ArrayList<>();
+        list.add("v2");
+        list.add("True");
+        list.add("three");
+        System.out.println(network.getVariableByName("Son").getElementFromCPT(list)+" 0.2");
 
-        //
-//        list.add("T");
-//        list.add("T");
-//        list.add("T");
-//        list.add("T");
-//        System.out.println(network.getVariableByName("A").getElementFromCPT(list));
-//        list=new ArrayList<>();
-//        list.add("F");
-//        list.add("T");
-//        list.add("T");
-//        System.out.println(network.getVariableByName("A").getElementFromCPT(list));
-//        list=new ArrayList<>();
-//        list.add("T");
-//        list.add("F");
-//        list.add("T");
-//        System.out.println(network.getVariableByName("A").getElementFromCPT(list));
-//        list=new ArrayList<>();
-//        list.add("F");
-//        list.add("F");
-//        list.add("T");
-//        System.out.println(network.getVariableByName("A").getElementFromCPT(list));
-//        list=new ArrayList<>();
-//        list.add("T");
-//        list.add("T");
-//        list.add("F");
-//        System.out.println(network.getVariableByName("A").getElementFromCPT(list));
-//        list=new ArrayList<>();
-//        list.add("F");
-//        list.add("T");
-//        list.add("F");
-//        System.out.println(network.getVariableByName("A").getElementFromCPT(list));
-//        list=new ArrayList<>();
-//        list.add("T");
-//        list.add("F");
-//        list.add("F");
-//        System.out.println(network.getVariableByName("A").getElementFromCPT(list));
-//        list=new ArrayList<>();
-//        list.add("F");
-//        list.add("F");
-//        list.add("F");
-//        System.out.println(network.getVariableByName("A").getElementFromCPT(list));
+        //202
+        list=new ArrayList<>();
+        list.add("v3");
+        list.add("True");
+        list.add("three");
+        System.out.println(network.getVariableByName("Son").getElementFromCPT(list)+" 0.61");
 
+        //012
+        list=new ArrayList<>();
+        list.add("v1");
+        list.add("False");
+        list.add("three");
+        System.out.println(network.getVariableByName("Son").getElementFromCPT(list)+" 0.21");
 
+        //112
+        list=new ArrayList<>();
+        list.add("v2");
+        list.add("False");
+        list.add("three");
+        System.out.println(network.getVariableByName("Son").getElementFromCPT(list)+" 0.22");
 
-
+        //212
+        list=new ArrayList<>();
+        list.add("v3");
+        list.add("False");
+        list.add("three");
+        System.out.println(network.getVariableByName("Son").getElementFromCPT(list)+" 0.57");
     }
 }

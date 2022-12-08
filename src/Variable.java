@@ -140,27 +140,31 @@ public class Variable {
     public double getElementFromCPT(ArrayList<String> given_outcomes)
     {
         int index =0;
+        //List Represent a list of our given outcomes by number instead of strings
+        // [first_outcome,first_outcome,second_outcome,third_outcome] -> [0,0,1,2]
         ArrayList <Integer> list = new ArrayList<>();
+        //First we will initilize the first element of 'list' by finding his index in current_Varuable.outcome
         for (int i = 0; i < outcomes.size(); i++) {
             if (given_outcomes.get(0).equals(outcomes.get(i)))
             {
                 list.add(i);
             }
         }
-
+        //Then initialize all the other given outcome indexes in given_outcome to list.
         for (int i = 1; i < given_outcomes.size(); i++) {
             for (int j = 0; j < parents.size(); j++) {
                 for (int k = 0; k < parents.get(j).outcomes.size(); k++) {
                     if(given_outcomes.get(i).equals(parents.get(j).outcomes.get(k)))
                     {
                         list.add(k);
+                        //if we found one-> set it to "" to remove duplicates
                         given_outcomes.set(i,"");
                     }
                 }
             }
         }
-        System.out.println(list.toString());
-
+        //Calculate our index
+        //Formula -> First index + SUM (list[i]*number_of_variables*i) i=1 to list.size
         index+=list.get(0);
         for (int i = 1; i < list.size(); i++) {
             index+= list.get(i)*outcomes.size()*(i);
