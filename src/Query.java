@@ -1,10 +1,5 @@
-import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Objects;
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
 
 /**
  * The Query class represents a Query in our given network
@@ -30,13 +25,8 @@ public class Query {
     ArrayList<String> evidencesOutComes;
     int algorithm;
     BayesianNetwork network;
-
-    static int algorithm_1_add_count=0;
-    static int algorithm_1_multi_count=0;
-
-
-    private static final DecimalFormat decfor = new DecimalFormat("0.00000");
-
+    int algorithm_1_add_count = 0;
+    int algorithm_1_multi_count = 0;
 
 
     /**
@@ -99,7 +89,6 @@ public class Query {
         //Add the current query to our given network
         network.addQuery(this);
     }
-
 
     /**
      * Extract Evidences From Input String
@@ -176,14 +165,6 @@ public class Query {
     }
 
     /**
-     * We know that the numerator is:
-     * P(q=q
-     */
-    void setNumerator() {
-
-    }
-
-    /**
      * To String method:
      * Return String of the Form:
      * P(q=q_outcome|e1=outcome_e1,e2=outcome_e2,...,ek=outcome_ek),<Algorithm number>
@@ -208,7 +189,12 @@ public class Query {
         return string.toString();
     }
 
-
+    //TODO:DOCUMENTATION and accurate more
+    /**
+     * Algorithm 1:
+     * @return
+     * @throws Exception
+     */
     public double algorithm_1() throws Exception {
         double numerator;
         double denominator;
@@ -251,7 +237,7 @@ public class Query {
 
 
         double sum_numerator = 0;
-        double sum_domintor=0;
+        double sum_domintor = 0;
 
 
         ArrayList<String> fixed_outcomes = new ArrayList<>();
@@ -268,12 +254,10 @@ public class Query {
 
             //Now in Fixed outcome in the form of:[J=T, B=T, E=T, A=T, M=T]
             //Now We need to calculate each posible fixed outcome and sum_numerator them together to get the Dominatior
-            sum_numerator+=calculateProbability(fixed_outcomes);
-            if (row!=matrix[0])
-            {
+            sum_numerator += calculateProbability(fixed_outcomes);
+            if (row != matrix[0]) {
                 algorithm_1_add_count++;
             }
-
 
 
             //For each other outcome of the first var,
@@ -281,12 +265,10 @@ public class Query {
             //and add them to sum_domintor
 
 
-
             for (int i = 0; i < query.getOutcomes().size(); i++) {
-                if (!query.getOutcomes().get(i).equals(fixed_outcomes.get(0).substring(fixed_outcomes.get(0).indexOf('=')+1)))
-                {
-                    fixed_outcomes.set(0,query.getName()+"="+query.getOutcomes().get(i));
-                    sum_domintor+=calculateProbability(fixed_outcomes);
+                if (!query.getOutcomes().get(i).equals(fixed_outcomes.get(0).substring(fixed_outcomes.get(0).indexOf('=') + 1))) {
+                    fixed_outcomes.set(0, query.getName() + "=" + query.getOutcomes().get(i));
+                    sum_domintor += calculateProbability(fixed_outcomes);
                     algorithm_1_add_count++;
 
 
@@ -294,7 +276,7 @@ public class Query {
             }
         }
 
-        denominator=sum_numerator+sum_domintor;
+        denominator = sum_numerator + sum_domintor;
         algorithm_1_add_count++;
 
 
@@ -312,17 +294,17 @@ public class Query {
 
 //        //Calculate donimtor
 //        denominator=calculateProbability(dominator_list);
-        double final_calc=sum_numerator/denominator;
+        double final_calc = sum_numerator / denominator;
 //
 //
 //
-        final_calc = final_calc*100000;
+        final_calc = final_calc * 100000;
         final_calc = Math.round(final_calc);
-        final_calc = final_calc /100000;
+        final_calc = final_calc / 100000;
 //
 //        System.out.println("denominator: "+denominator+" numerator: "+numerator+" final:"+final_calc);
         System.out.println(final_calc);
-        System.out.println("ADD COUNT: "+ algorithm_1_add_count+" MULTI COUNT:"+ algorithm_1_multi_count);
+        System.out.println("ADD COUNT: " + algorithm_1_add_count + " MULTI COUNT:" + algorithm_1_multi_count);
         return final_calc;
     }
 
@@ -388,7 +370,7 @@ public class Query {
     private double calculateProbability(ArrayList<String> input) throws Exception {
 
 
-        ArrayList<Double> elementsFromCPT=new ArrayList<>();
+        ArrayList<Double> elementsFromCPT = new ArrayList<>();
         double product = 1;
         String variable_name;
         String variable_outcome;
@@ -400,7 +382,7 @@ public class Query {
             ArrayList<String> outputs_for_var_parents = new ArrayList<>();
             outputs_for_var_parents.add(variable_outcome);
 
-            for (int j = currentVar.getParents().size()-1; j >=0; j--) {
+            for (int j = currentVar.getParents().size() - 1; j >= 0; j--) {
                 for (int k = 0; k < input.size(); k++) {
                     if (currentVar.getParents().get(j).getName().equals(input.get(k).substring(0, input.get(i).indexOf('=')))) {
                         outputs_for_var_parents.add(input.get(k).substring(input.get(k).indexOf('=') + 1));
@@ -413,52 +395,21 @@ public class Query {
 
         }
 
-        System.out.println(input);
-        System.out.println(elementsFromCPT);
+        //System.out.println(input);
+        //System.out.println(elementsFromCPT);
 
 
         for (int i = 0; i < elementsFromCPT.size(); i++) {
             product = product * elementsFromCPT.get(i);
-            if(i!=0)
-            {
+            if (i != 0) {
                 algorithm_1_multi_count++;
             }
 
         }
 
 
-
-
-
-        System.out.println("PRODUCT OF "+ elementsFromCPT + " IS "+product+'\n');
+        //System.out.println("PRODUCT OF "+ elementsFromCPT + " IS "+product+'\n');
 
         return product;
     }
-
-    public static void main(String[] args) {
-
-    }
-
-    public static boolean hasEqualRows(int[][] matrix) {
-        for (int i = 0; i < matrix.length; i++) {
-            for (int j = i + 1; j < matrix.length; j++) {
-                if (Arrays.equals(matrix[i], matrix[j])) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    public static void printMatrix(int[][] matrix) {
-        for (int[] row : matrix) {
-            for (int col : row) {
-                System.out.print(col + " ");
-            }
-            System.out.println();
-        }
-    }
-
-
-
 }

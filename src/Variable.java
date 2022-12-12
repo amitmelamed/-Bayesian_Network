@@ -20,9 +20,6 @@ public class Variable {
     private final ArrayList<Variable> childrens;
     private final ArrayList<String> outcomes;
     private ArrayList<Double> CPT;
-
-
-
     /**
      * Constructor
      * @param name
@@ -35,8 +32,6 @@ public class Variable {
         childrens = new ArrayList<>();
         CPT= new ArrayList<>();
     }
-
-
     /**
      * Getters
      */
@@ -55,8 +50,6 @@ public class Variable {
     public ArrayList<Double> getCPT() {
         return CPT;
     }
-
-
     /**
      * Input is string in the form "Double Double ... Double"
      * The function will take the input from the string,
@@ -70,14 +63,6 @@ public class Variable {
         for(String number : numbers){
             CPT.add(Double.parseDouble(number));
         }
-    }
-
-    /**
-     * Add Value to variable functions
-     */
-    public void addOutcome(String outcome)
-    {
-        outcomes.add(outcome);
     }
 
     /**
@@ -95,7 +80,6 @@ public class Variable {
     {
         childrens.add(child);
     }
-
 
     /**
      * Convert variable data into string:

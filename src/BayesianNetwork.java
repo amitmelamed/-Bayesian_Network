@@ -2,13 +2,11 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -26,16 +24,8 @@ import java.util.ArrayList;
  */
 
 public class BayesianNetwork {
+    //Network implemented by creatig a directed acyclic graph (DAG)
     private static ArrayList<Variable> network;
-
-    public static ArrayList<Variable> getNetwork() {
-        return network;
-    }
-
-    public ArrayList<Query> getQueries() {
-        return queries;
-    }
-
     private ArrayList<Query> queries;
 
     /**Constructor
@@ -151,10 +141,6 @@ public class BayesianNetwork {
             e.printStackTrace();
         }
     }
-
-    /**
-     * Function to print our network data.
-     */
     public void printNetwork(){
         for (int i = 0; i < network.size(); i++) {
             System.out.println(network.get(i).toString());
@@ -163,33 +149,19 @@ public class BayesianNetwork {
             System.out.println(queries.get(i).toString());
         }
     }
-    /**
-     * Add new Variable to our network.
-     * @param variable
-     */
     public void addVariable(Variable variable)
     {
         network.add(variable);
     }
-
-    /**
-     * Remove Variable from network recursively.
-     * Remove function remove all appearance.
-     * Algorithm:
-     * 1.Iterate over all variables.
-     * 1.1 if found -> remove instance from network and call function recursivly to find other appearance of variable name.
-     * @param variableName
-     */
-    public void removeVariable(String variableName)
+    public static ArrayList<Variable> getNetwork() {
+        return network;
+    }
+    public ArrayList<Query> getQueries() {
+        return queries;
+    }
+    public void addQuery(Query query)
     {
-        //For each Variable
-        for (int i = 0; i < network.size(); i++) {
-            if(network.get(i).getName().equals(variableName))
-            {
-                network.remove(i);
-                removeVariable(variableName);
-            }
-        }
+        queries.add(query);
     }
 
     /**
@@ -267,26 +239,5 @@ public class BayesianNetwork {
         throw new Exception("Variable Not Found");
     }
 
-
-    public boolean isVariableExistInNetwork(Variable variable)
-    {
-        boolean exist = false;
-        for (Variable value : network) {
-            if (value.getName().equals(variable.getName())) {
-                exist = true;
-                break;
-            }
-        }
-        return exist;
-    }
-
-    /**
-     * Add Query to our network
-     * @param query
-     */
-    public void addQuery(Query query)
-    {
-        queries.add(query);
-    }
 }
 
