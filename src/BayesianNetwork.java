@@ -27,6 +27,15 @@ import java.util.ArrayList;
 
 public class BayesianNetwork {
     private static ArrayList<Variable> network;
+
+    public static ArrayList<Variable> getNetwork() {
+        return network;
+    }
+
+    public ArrayList<Query> getQueries() {
+        return queries;
+    }
+
     private ArrayList<Query> queries;
 
     /**Constructor
@@ -44,7 +53,7 @@ public class BayesianNetwork {
         try {
             reader = new BufferedReader(new FileReader(InputDestination));
             String line = reader.readLine();
-            ImportValuesFromXML("src/"+line);
+            ImportValuesFromXML(line);
             line = reader.readLine();
             while (line != null) {
                 // read next line
@@ -241,7 +250,6 @@ public class BayesianNetwork {
         }
         return true;
     }
-
     /**
      * Get Variable by name function.
      * Throws expection if the variable not found.
@@ -257,6 +265,19 @@ public class BayesianNetwork {
             }
         }
         throw new Exception("Variable Not Found");
+    }
+
+
+    public boolean isVariableExistInNetwork(Variable variable)
+    {
+        boolean exist = false;
+        for (Variable value : network) {
+            if (value.getName().equals(variable.getName())) {
+                exist = true;
+                break;
+            }
+        }
+        return exist;
     }
 
     /**

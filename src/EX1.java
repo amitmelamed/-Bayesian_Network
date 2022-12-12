@@ -11,14 +11,17 @@ public class EX1 {
 
 
     public static void main(String[] args) throws Exception {
+        BayesianNetwork network= new BayesianNetwork("input.txt");
+        for (int i = 0; i < network.getQueries().size(); i++) {
+            network.getQueries().get(i).algorithm_1();
+        }
         //ExampleNetwork_1();
         //ExampleNetwork_2();
-
 
     }
 
     private static void ExampleNetwork_2() throws Exception {
-        BayesianNetwork network= new BayesianNetwork("src/input.txt");
+        BayesianNetwork network= new BayesianNetwork("input.txt");
         ArrayList<String> list=new ArrayList<>();
 
         list.add("T");
