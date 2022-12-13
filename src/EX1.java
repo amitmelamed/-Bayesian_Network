@@ -10,6 +10,4 @@ public class EX1 {
             network.getQueries().get(i).algorithm_1();
         }
     }
-
-
 }

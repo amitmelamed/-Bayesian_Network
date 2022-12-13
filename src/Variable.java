@@ -151,7 +151,7 @@ public class Variable {
         //Formula -> First index + SUM (list[i]*number_of_variables*i) i=1 to list.size
         index+=list.get(0);
         for (int i = 1; i < list.size(); i++) {
-            index+= list.get(i)*outcomes.size()*(i);
+            index+= (list.get(i)*outcomes.size()*(i));
         }
         return CPT.get(index);
     }

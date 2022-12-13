@@ -231,6 +231,8 @@ public class Query {
         fillMatrix(matrix, arrayList, 0, arrayList.size(), variablesNotInQuery.size(), 1);
 
 
+
+
         //After the calculations in fill matrix
         //We will have matrix that each line represent the variables outcome we need to iterate for each
         //calculation
@@ -238,6 +240,8 @@ public class Query {
 
         double sum_numerator = 0;
         double sum_domintor = 0;
+
+
 
 
         ArrayList<String> fixed_outcomes = new ArrayList<>();
@@ -254,30 +258,49 @@ public class Query {
 
             //Now in Fixed outcome in the form of:[J=T, B=T, E=T, A=T, M=T]
             //Now We need to calculate each posible fixed outcome and sum_numerator them together to get the Dominatior
+
+
+
+
             sum_numerator += calculateProbability(fixed_outcomes);
+            //System.out.println(fixed_outcomes);
             if (row != matrix[0]) {
                 algorithm_1_add_count++;
+            }
+
+            //Create a deep copy of the fixed outcome List - to check after this if we did this calc or not
+            ArrayList<String> originalFixedOutcome=new ArrayList<>();
+            for (String element : fixed_outcomes) {
+                originalFixedOutcome.add(new String(element));
             }
 
 
             //For each other outcome of the first var,
             //Calculate the other options of the first outcome
-            //and add them to sum_domintor
+            //and add them to sum_dominator
 
 
             for (int i = 0; i < query.getOutcomes().size(); i++) {
                 if (!query.getOutcomes().get(i).equals(fixed_outcomes.get(0).substring(fixed_outcomes.get(0).indexOf('=') + 1))) {
+
                     fixed_outcomes.set(0, query.getName() + "=" + query.getOutcomes().get(i));
-                    sum_domintor += calculateProbability(fixed_outcomes);
-                    algorithm_1_add_count++;
 
-
+                    //If the new fixed outcome equal to original - we don't want to calculate this.
+                    //This If statement created to prevent bugs.
+                    if (!fixed_outcomes.equals(originalFixedOutcome))
+                    {
+                        sum_domintor += calculateProbability(fixed_outcomes);
+                        algorithm_1_add_count++;
+                    }
                 }
             }
         }
 
+
+
         denominator = sum_numerator + sum_domintor;
-        algorithm_1_add_count++;
+
+
 
 
 //        //Find domintor list
@@ -303,8 +326,14 @@ public class Query {
         final_calc = final_calc / 100000;
 //
 //        System.out.println("denominator: "+denominator+" numerator: "+numerator+" final:"+final_calc);
-        System.out.println(final_calc);
-        System.out.println("ADD COUNT: " + algorithm_1_add_count + " MULTI COUNT:" + algorithm_1_multi_count);
+        System.out.println();
+        System.out.println("numerator: "+ sum_numerator);
+        System.out.println("domintor: "+ denominator);
+        System.out.println(final_calc+","+algorithm_1_add_count+","+algorithm_1_multi_count);
+
+
+
+
         return final_calc;
     }
 
@@ -369,12 +398,14 @@ public class Query {
      */
     private double calculateProbability(ArrayList<String> input) throws Exception {
 
+        //System.out.println( input);
 
         ArrayList<Double> elementsFromCPT = new ArrayList<>();
         double product = 1;
         String variable_name;
         String variable_outcome;
         Variable currentVar;
+
         for (int i = 0; i < input.size(); i++) {
             variable_name = input.get(i).substring(0, input.get(i).indexOf('='));
             variable_outcome = input.get(i).substring(input.get(i).indexOf('=') + 1);
@@ -382,15 +413,24 @@ public class Query {
             ArrayList<String> outputs_for_var_parents = new ArrayList<>();
             outputs_for_var_parents.add(variable_outcome);
 
-            for (int j = currentVar.getParents().size() - 1; j >= 0; j--) {
+
+
+            for (int j = currentVar.getParents().size()-1 ; j >= 0; j--) {
                 for (int k = 0; k < input.size(); k++) {
                     if (currentVar.getParents().get(j).getName().equals(input.get(k).substring(0, input.get(i).indexOf('=')))) {
-                        outputs_for_var_parents.add(input.get(k).substring(input.get(k).indexOf('=') + 1));
+                        String outcome=input.get(k).substring(input.get(k).indexOf('=') + 1);
+                        outputs_for_var_parents.add(outcome);
                     }
                 }
             }
 
-
+//            for (int j = currentVar.getParents().size()-1 ; j >= 0; j--) {
+//                for (int k = 0; k < input.size(); k++) {
+//                    if (currentVar.getParents().get(j).getName().equals(input.get(k).substring(0, input.get(i).indexOf('=')))) {
+//                        outputs_for_var_parents.add(input.get(k).substring(input.get(k).indexOf('=') + 1));
+//                    }
+//                }
+//            }
             elementsFromCPT.add(currentVar.getElementFromCPT(outputs_for_var_parents));
 
         }
@@ -404,7 +444,6 @@ public class Query {
             if (i != 0) {
                 algorithm_1_multi_count++;
             }
-
         }
 
 
@@ -412,4 +451,36 @@ public class Query {
 
         return product;
     }
+
+    /**
+     * Function to print matrix for debugging
+     * @param matrix
+     */
+    private void printMatrix(int[][] matrix) {
+        for (int i = 0; i < matrix.length; i++) {
+            for (int j = 0; j < matrix[i].length; j++) {
+                System.out.print(matrix[i][j] + " ");
+            }
+            System.out.println();
+        }
+    }
+    public void hasTwoEqualStrings(String[] strings) {
+        // Loop through each string in the array
+        for (int i = 0; i < strings.length; i++) {
+            // Loop through the remaining strings in the array
+            for (int j = i + 1; j < strings.length; j++) {
+                // Check if the two strings are equal
+                if (strings[i].equals(strings[j])) {
+                    // If the strings are equal, return true
+                    System.out.println("EQUAL STRINGS at :"+i+" j\n"+
+                            strings[i]);
+                    return;
+                }
+            }
+        }
+
+        // If we reach here, no two strings were equal
+        System.out.println("NO DUPLICATE STRING");;
+    }
 }
+
