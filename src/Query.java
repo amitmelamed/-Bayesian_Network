@@ -189,9 +189,14 @@ public class Query {
         return string.toString();
     }
 
-    //TODO:DOCUMENTATION and accurate more
+
     /**
      * Algorithm 1:
+     * For Example
+     * P(A|B,C) = P(A,B,C) / P(B,C)
+     * 1.Calculate Numerator = P(A,B,C)
+     * 2.Calculate Dominator = P(B,C)
+     * return Numerator/Dominator
      * @return
      * @throws Exception
      */
@@ -214,35 +219,23 @@ public class Query {
                 variablesNotInQuery.add(BayesianNetwork.getNetwork().get(i));
             }
         }
-
-
         ArrayList<Integer> arrayList = new ArrayList<>();
         for (int i = 0; i < variablesNotInQuery.size(); i++) {
             arrayList.add(variablesNotInQuery.get(i).getOutcomes().size());
         }
-
         int product = 1;
         for (int i = 0; i < arrayList.size(); i++) {
             product *= arrayList.get(i);
         }
-
         int[][] matrix = new int[product][arrayList.size()];
-
-        fillMatrix(matrix, arrayList, 0, arrayList.size(), variablesNotInQuery.size(), 1);
-
-
-
+        fillMatrix(matrix, arrayList, 0, arrayList.size(), 1);
 
         //After the calculations in fill matrix
         //We will have matrix that each line represent the variables outcome we need to iterate for each
         //calculation
 
-
         double sum_numerator = 0;
         double sum_domintor = 0;
-
-
-
 
         ArrayList<String> fixed_outcomes = new ArrayList<>();
         //Each row represent the values of the current
@@ -298,42 +291,18 @@ public class Query {
 
 
 
+        //Domintor = Numerator + sum_domintor variable
         denominator = sum_numerator + sum_domintor;
 
-
-
-
-//        //Find domintor list
-//        ArrayList<String> dominator_list=new ArrayList<>();
-//        for (int i = 0; i < evidences.size(); i++) {
-//            dominator_list.add(evidences.get(i).getName()+"="+evidencesOutComes.get(i));
-//        }
-//        System.out.println("DOMINTOR LIST: "+ dominator_list);
-//
-//
-//
-//
-
-
-//        //Calculate donimtor
-//        denominator=calculateProbability(dominator_list);
         double final_calc = sum_numerator / denominator;
-//
-//
-//
+
+        //Normlize calculation to 0.00000 Form
         final_calc = final_calc * 100000;
         final_calc = Math.round(final_calc);
         final_calc = final_calc / 100000;
-//
-//        System.out.println("denominator: "+denominator+" numerator: "+numerator+" final:"+final_calc);
-        System.out.println();
-        System.out.println("numerator: "+ sum_numerator);
-        System.out.println("domintor: "+ denominator);
+
+
         System.out.println(final_calc+","+algorithm_1_add_count+","+algorithm_1_multi_count);
-
-
-
-
         return final_calc;
     }
 
@@ -344,12 +313,11 @@ public class Query {
      * @param outcomes_count_per_var outcomes_count_per_var[i] = number of outcomes variable i have.
      * @param start                  -> currect col we are working at
      * @param end                    ->number of col
-     * @param numberOfVar
      * @param product                -> each time we move to new col -> we need to know how many var we need to fill in sequence.
      *                               at each iteration -> we multiply the product count by outcomes_count_per_var.get[previus col index]
      *                               DO NOT ASK QUESTIONS IT WORKS.
      */
-    static void fillMatrix(int[][] matrix, ArrayList<Integer> outcomes_count_per_var, int start, int end, int numberOfVar, int product) {
+    static void fillMatrix(int[][] matrix, ArrayList<Integer> outcomes_count_per_var, int start, int end, int product) {
         //Stop Condition -> In this case we finished filling our table
         if (start == end) {
             return;
@@ -384,7 +352,7 @@ public class Query {
 
         }
         //Recursively call the function to fill the next coll
-        fillMatrix(matrix, outcomes_count_per_var, start + 1, end, numberOfVar, product);
+        fillMatrix(matrix, outcomes_count_per_var, start +1, end, product);
     }
 
     /**
@@ -398,57 +366,44 @@ public class Query {
      */
     private double calculateProbability(ArrayList<String> input) throws Exception {
 
-        //System.out.println( input);
-
         ArrayList<Double> elementsFromCPT = new ArrayList<>();
         double product = 1;
         String variable_name;
         String variable_outcome;
         Variable currentVar;
 
+        //We know that P(J=T,B=T,E=T,A=T,M=F) = P(J=T | His parents) * P(B=T | His parents) * .. * P(M=F | His parents)
+        //So we import each calculation from the Variable CPT table, and multiply all of them.
         for (int i = 0; i < input.size(); i++) {
             variable_name = input.get(i).substring(0, input.get(i).indexOf('='));
             variable_outcome = input.get(i).substring(input.get(i).indexOf('=') + 1);
             currentVar = network.getVariableByName(variable_name);
             ArrayList<String> outputs_for_var_parents = new ArrayList<>();
-            outputs_for_var_parents.add(variable_outcome);
+            outputs_for_var_parents.add(variable_name+"="+variable_outcome);
 
 
 
             for (int j = currentVar.getParents().size()-1 ; j >= 0; j--) {
                 for (int k = 0; k < input.size(); k++) {
                     if (currentVar.getParents().get(j).getName().equals(input.get(k).substring(0, input.get(i).indexOf('=')))) {
-                        String outcome=input.get(k).substring(input.get(k).indexOf('=') + 1);
+                        String outcome=input.get(k);
                         outputs_for_var_parents.add(outcome);
                     }
                 }
             }
-
-//            for (int j = currentVar.getParents().size()-1 ; j >= 0; j--) {
-//                for (int k = 0; k < input.size(); k++) {
-//                    if (currentVar.getParents().get(j).getName().equals(input.get(k).substring(0, input.get(i).indexOf('=')))) {
-//                        outputs_for_var_parents.add(input.get(k).substring(input.get(k).indexOf('=') + 1));
-//                    }
-//                }
-//            }
+            //Add element to the CPT table
             elementsFromCPT.add(currentVar.getElementFromCPT(outputs_for_var_parents));
 
         }
 
-        //System.out.println(input);
-        //System.out.println(elementsFromCPT);
-
-
+        //Multiply all the imported probabilities from the CPT tables
         for (int i = 0; i < elementsFromCPT.size(); i++) {
             product = product * elementsFromCPT.get(i);
             if (i != 0) {
                 algorithm_1_multi_count++;
             }
         }
-
-
-        //System.out.println("PRODUCT OF "+ elementsFromCPT + " IS "+product+'\n');
-
+        //The product equal P(J=T,B=T,E=T,A=T,M=F) of the given input
         return product;
     }
 
@@ -463,24 +418,6 @@ public class Query {
             }
             System.out.println();
         }
-    }
-    public void hasTwoEqualStrings(String[] strings) {
-        // Loop through each string in the array
-        for (int i = 0; i < strings.length; i++) {
-            // Loop through the remaining strings in the array
-            for (int j = i + 1; j < strings.length; j++) {
-                // Check if the two strings are equal
-                if (strings[i].equals(strings[j])) {
-                    // If the strings are equal, return true
-                    System.out.println("EQUAL STRINGS at :"+i+" j\n"+
-                            strings[i]);
-                    return;
-                }
-            }
-        }
-
-        // If we reach here, no two strings were equal
-        System.out.println("NO DUPLICATE STRING");;
     }
 }
 
