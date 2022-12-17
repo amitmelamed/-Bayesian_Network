@@ -7,6 +7,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 
 /**
@@ -27,6 +28,7 @@ public class BayesianNetwork {
     //Network implemented by creatig a directed acyclic graph (DAG)
     private static ArrayList<Variable> network;
     private ArrayList<Query> queries;
+    public PrintWriter outputFileWriter;
 
     /**Constructor
      * Input: XML destination in the form of string
@@ -34,11 +36,14 @@ public class BayesianNetwork {
      * and will call to ImportValuesFromXML
      * to import the data from out XML file into our network
      * @param InputDestination
+     * @param writer
      */
-    public BayesianNetwork(String InputDestination) {
+    public BayesianNetwork(String InputDestination, PrintWriter writer) {
         network = new ArrayList<>();
         queries=new ArrayList<>();
         BufferedReader reader;
+        outputFileWriter=writer;
+
 
         try {
             reader = new BufferedReader(new FileReader(InputDestination));

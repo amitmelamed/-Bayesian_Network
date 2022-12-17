@@ -1,3 +1,5 @@
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -302,7 +304,8 @@ public class Query {
         final_calc = final_calc / 100000;
 
 
-        System.out.println(final_calc+","+algorithm_1_add_count+","+algorithm_1_multi_count);
+        network.outputFileWriter.println(final_calc+","+algorithm_1_add_count+","+algorithm_1_multi_count);
+
         return final_calc;
     }
 
