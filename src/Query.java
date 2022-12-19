@@ -1,3 +1,4 @@
+import javax.swing.plaf.synth.SynthOptionPaneUI;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -90,6 +91,18 @@ public class Query {
         ExtractAlgorithmInput(queryInput, network, query_name, query_outcome, evidence_names_arr, evidence_outcomes_arr);
         //Add the current query to our given network
         network.addQuery(this);
+        if(algorithm==1)
+        {
+            algorithm_1();
+        }
+        if(algorithm==2)
+        {
+            algorithm_2();
+        }
+        if(algorithm==3)
+        {
+            System.out.println("NOT FINISHED YED");
+        }
     }
 
     /**
@@ -146,7 +159,7 @@ public class Query {
      * @throws Exception
      */
     private void ExtractAlgorithmInput(String queryInput, BayesianNetwork network, String query_name, String query_outcome, ArrayList<String> evidence_names_arr, ArrayList<String> evidence_outcomes_arr) throws Exception {
-        int algorithm = -1;
+
         if (queryInput.contains("1")) {
             algorithm = 1;
         } else if (queryInput.contains("2")) {
@@ -421,6 +434,11 @@ public class Query {
             }
             System.out.println();
         }
+    }
+
+
+    public void algorithm_2() throws Exception {
+        System.out.println("algo 2");
     }
 }
 

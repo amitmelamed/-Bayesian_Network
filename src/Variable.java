@@ -21,6 +21,7 @@ public class Variable {
     private final ArrayList<String> outcomes;
     private ArrayList<Double> CPT;
     public HashMap<String, Double> CPT_Table;
+    public Factor factor;
 
     /**
      * Constructor
@@ -74,6 +75,7 @@ public class Variable {
             CPT.add(Double.parseDouble(number));
         }
         BuildCPT_Table();
+
 
     }
 
@@ -244,6 +246,14 @@ public class Variable {
             CPT_Table.put(key,CPT.get(CPT_Array_Index));
             CPT_Array_Index++;
         }
+
+
+        ArrayList<Variable> factorVariables=new ArrayList<>();
+        factorVariables.add(this);
+        for (int i =  parents.size()-1; i >= 0; i--) {
+            factorVariables.add(parents.get(i));
+        }
+        factor=new Factor(CPT,factorVariables);
     }
 
 
