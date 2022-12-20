@@ -2,6 +2,8 @@ import javax.swing.plaf.synth.SynthOptionPaneUI;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -30,7 +32,8 @@ public class Query {
     BayesianNetwork network;
     int algorithm_1_add_count = 0;
     int algorithm_1_multi_count = 0;
-
+    int algorithm_2_add_count =0;
+    int algorithm_2_multi_count =0;
 
     /**
      * Constructor
@@ -91,16 +94,13 @@ public class Query {
         ExtractAlgorithmInput(queryInput, network, query_name, query_outcome, evidence_names_arr, evidence_outcomes_arr);
         //Add the current query to our given network
         network.addQuery(this);
-        if(algorithm==1)
-        {
+        if (algorithm == 1) {
             algorithm_1();
         }
-        if(algorithm==2)
-        {
+        if (algorithm == 2) {
             algorithm_2();
         }
-        if(algorithm==3)
-        {
+        if (algorithm == 3) {
             System.out.println("NOT FINISHED YED");
         }
     }
@@ -212,15 +212,14 @@ public class Query {
      * 1.Calculate Numerator = P(A,B,C)
      * 2.Calculate Dominator = P(B,C)
      * return Numerator/Dominator
+     *
      * @return
      * @throws Exception
      */
     public double algorithm_1() throws Exception {
         double numerator;
         double denominator;
-
         // Numerator = P( q = q_outcome , e1 = outcome_e1 , ... , ek = outcome_ek)
-
         //Find what variables not in query
         ArrayList<Variable> variablesNotInQuery = new ArrayList<>();
         for (int i = 0; i < BayesianNetwork.getNetwork().size(); i++) {
@@ -267,9 +266,6 @@ public class Query {
             //Now in Fixed outcome in the form of:[J=T, B=T, E=T, A=T, M=T]
             //Now We need to calculate each posible fixed outcome and sum_numerator them together to get the Dominatior
 
-
-
-
             sum_numerator += calculateProbability(fixed_outcomes);
             //System.out.println(fixed_outcomes);
             if (row != matrix[0]) {
@@ -277,17 +273,13 @@ public class Query {
             }
 
             //Create a deep copy of the fixed outcome List - to check after this if we did this calc or not
-            ArrayList<String> originalFixedOutcome=new ArrayList<>();
+            ArrayList<String> originalFixedOutcome = new ArrayList<>();
             for (String element : fixed_outcomes) {
                 originalFixedOutcome.add(new String(element));
             }
-
-
             //For each other outcome of the first var,
             //Calculate the other options of the first outcome
             //and add them to sum_dominator
-
-
             for (int i = 0; i < query.getOutcomes().size(); i++) {
                 if (!query.getOutcomes().get(i).equals(fixed_outcomes.get(0).substring(fixed_outcomes.get(0).indexOf('=') + 1))) {
 
@@ -295,17 +287,13 @@ public class Query {
 
                     //If the new fixed outcome equal to original - we don't want to calculate this.
                     //This If statement created to prevent bugs.
-                    if (!fixed_outcomes.equals(originalFixedOutcome))
-                    {
+                    if (!fixed_outcomes.equals(originalFixedOutcome)) {
                         sum_domintor += calculateProbability(fixed_outcomes);
                         algorithm_1_add_count++;
                     }
                 }
             }
         }
-
-
-
         //Domintor = Numerator + sum_domintor variable
         denominator = sum_numerator + sum_domintor;
 
@@ -315,10 +303,7 @@ public class Query {
         final_calc = final_calc * 100000;
         final_calc = Math.round(final_calc);
         final_calc = final_calc / 100000;
-
-
-        network.outputFileWriter.println(final_calc+","+algorithm_1_add_count+","+algorithm_1_multi_count);
-
+        network.outputFileWriter.println(final_calc + "," + algorithm_1_add_count + "," + algorithm_1_multi_count);
         return final_calc;
     }
 
@@ -368,7 +353,7 @@ public class Query {
 
         }
         //Recursively call the function to fill the next coll
-        fillMatrix(matrix, outcomes_count_per_var, start +1, end, product);
+        fillMatrix(matrix, outcomes_count_per_var, start + 1, end, product);
     }
 
     /**
@@ -395,14 +380,13 @@ public class Query {
             variable_outcome = input.get(i).substring(input.get(i).indexOf('=') + 1);
             currentVar = network.getVariableByName(variable_name);
             ArrayList<String> outputs_for_var_parents = new ArrayList<>();
-            outputs_for_var_parents.add(variable_name+"="+variable_outcome);
+            outputs_for_var_parents.add(variable_name + "=" + variable_outcome);
 
 
-
-            for (int j = currentVar.getParents().size()-1 ; j >= 0; j--) {
+            for (int j = currentVar.getParents().size() - 1; j >= 0; j--) {
                 for (int k = 0; k < input.size(); k++) {
                     if (currentVar.getParents().get(j).getName().equals(input.get(k).substring(0, input.get(i).indexOf('=')))) {
-                        String outcome=input.get(k);
+                        String outcome = input.get(k);
                         outputs_for_var_parents.add(outcome);
                     }
                 }
@@ -425,6 +409,7 @@ public class Query {
 
     /**
      * Function to print matrix for debugging
+     *
      * @param matrix
      */
     private void printMatrix(int[][] matrix) {
@@ -437,8 +422,125 @@ public class Query {
     }
 
 
+    /**
+     * Variable Elimination Algorithm use to calculate our Query Probability
+     *
+     * @throws Exception
+     */
     public void algorithm_2() throws Exception {
-        System.out.println("algo 2");
+        ArrayList<Factor> factors = new ArrayList<>();
+        ArrayList<Variable> hidden = new ArrayList<>();
+        for (int i = 0; i < BayesianNetwork.getNetwork().size(); i++) {
+            boolean exist = false;
+            for (int j = 0; j < evidences.size(); j++) {
+                if (BayesianNetwork.getNetwork().get(i).getName().equals(evidences.get(j).getName())) {
+                    exist = true;
+                }
+            }
+            if (!exist && !Objects.equals(BayesianNetwork.getNetwork().get(i).getName(), query.getName())) {
+                hidden.add(BayesianNetwork.getNetwork().get(i));
+            }
+        }
+
+        //Construct starting factors
+        factors.add(query.factor);
+
+        for (int i = 0; i < evidences.size(); i++) {
+            factors.add(evidences.get(i).factor);
+        }
+        for (int i = 0; i < hidden.size(); i++) {
+            factors.add(hidden.get(i).factor);
+        }
+
+        //Place evidences in factors into newFactor
+        ArrayList<Factor> newFactors = new ArrayList<>();
+        for (int i = 0; i < factors.size(); i++) {
+            Factor f = factors.get(i);
+            for (int j = 0; j < evidences.size(); j++) {
+                String key = evidences.get(j).getName() + "=" + evidencesOutComes.get(j);
+                f = f.placeEvidence(key);
+
+            }
+            if (!f.table.isEmpty()) {
+                newFactors.add(f);
+            }
+
+        }
+
+        //Sort Hidden variables by alphabet
+        hidden.sort(Comparator.comparing(Variable::getName));
+
+        for (int i = 0; i < hidden.size(); i++) {
+            ArrayList<Factor> factorsWithH = new ArrayList<>();
+            ArrayList<Factor> factorsWithoutH = new ArrayList<>();
+            Variable H = hidden.get(i);
+            for (int j = 0; j < newFactors.size(); j++) {
+                boolean containH = false;
+                Factor currentFactor = newFactors.get(j);
+                for (int k = 0; k < currentFactor.variables_names.size(); k++) {
+                    if (H.getName().equals(currentFactor.variables_names.get(k))) {
+                        containH = true;
+                    }
+                }
+                if (containH) {
+                    factorsWithH.add(currentFactor);
+                } else {
+                    factorsWithoutH.add(currentFactor);
+                }
+            }
+            if (factorsWithH.size() != 0) {
+                Factor joinedFactor = factorsWithH.get(0);
+                for (int j = 1; j < factorsWithH.size(); j++) {
+                    joinedFactor = Factor.Join(joinedFactor, factorsWithH.get(j));
+                }
+
+                newFactors = new ArrayList<>();
+                if (!(joinedFactor.variablesOfCurrentFactor.size()==1 && joinedFactor.variablesOfCurrentFactor.get(0).getName().equals(H.getName())))
+                {
+                    joinedFactor = joinedFactor.Eliminate(H.getName());
+                    newFactors.add(joinedFactor);
+                }
+
+
+
+                newFactors.addAll(factorsWithoutH);
+            }
+        }
+
+        for (int i = 0; i < newFactors.size(); i++) {
+            if(newFactors.get(i).table.containsKey(""))
+            {
+                newFactors.remove(i);
+            }
+        }
+        Factor factor = newFactors.get(0);
+
+        for (int i = 1; i < newFactors.size(); i++) {
+            factor = Factor.Join(factor, newFactors.get(i));
+        }
+        //Factor is our final factor
+        //Now we need to normalize it
+
+        Double sum = 0.0;
+        for (Map.Entry<String, Double> set :
+                factor.table.entrySet()) {
+
+            // Printing all elements of a Map
+            sum += set.getValue();
+        }
+        double alpha = 1 / sum;
+
+        double final_calc = factor.table.get(query.getName()+"="+queryOutCome)*alpha;
+        final_calc = final_calc * 100000;
+        final_calc = Math.round(final_calc);
+        final_calc = final_calc / 100000;
+        network.outputFileWriter.println(final_calc);
+
+        System.out.println(final_calc);
+
     }
+
+
 }
+
 

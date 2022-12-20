@@ -1,7 +1,4 @@
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * The Variable class is representing Variable in a Bayesian Network.
@@ -75,8 +72,6 @@ public class Variable {
             CPT.add(Double.parseDouble(number));
         }
         BuildCPT_Table();
-
-
     }
 
     /**
@@ -84,7 +79,6 @@ public class Variable {
      */
     public void addParent(Variable parent) {
         parents.add(parent);
-
     }
 
     /**
@@ -105,27 +99,26 @@ public class Variable {
     @Override
     public String toString() {
         String variableString = "Variable Name : " + name + " ";
-        for (int i = 0; i < outcomes.size(); i++) {
-            variableString += ("Outcome : " + outcomes.get(i) + '\n');
-        }
-        variableString +=("Parents:");
-        for (int i = 0; i < parents.size(); i++) {
-            variableString +=(parents.get(i).getName() + ' ') ;
-        }
-        variableString += '\n';
-        variableString +=("Children's:");
-        for (int i = 0; i < childrens.size(); i++) {
-            variableString +=(childrens.get(i).getName()+ ' ');
-        }
-        variableString += "\nCPT:";
-        for (int i = 0; i < CPT.size(); i++) {
-            variableString+=CPT.get(i).toString();
-            variableString+=' ';
-        }
-        variableString+='\n';
+//        for (int i = 0; i < outcomes.size(); i++) {
+//            variableString += ("Outcome : " + outcomes.get(i) + '\n');
+//        }
+//        variableString +=("Parents:");
+//        for (int i = 0; i < parents.size(); i++) {
+//            variableString +=(parents.get(i).getName() + ' ') ;
+//        }
+//        variableString += '\n';
+//        variableString +=("Children's:");
+//        for (int i = 0; i < childrens.size(); i++) {
+//            variableString +=(childrens.get(i).getName()+ ' ');
+//        }
+//        variableString += "\nCPT:";
+//        for (int i = 0; i < CPT.size(); i++) {
+//            variableString+=CPT.get(i).toString();
+//            variableString+=' ';
+//        }
+//        variableString+='\n';
         return variableString;
     }
-
 
     /**
      * This function input is List of Strings representing our given outcome.
@@ -152,46 +145,11 @@ public class Variable {
                 {
                     key+=",";
                 }
-
             }
         }
         //Return Key
+
         return CPT_Table.get(key);
-        /**
-         * DO NOT TOUCH
-         */
-//        int index = 0;
-//        //List Represent a list of our given outcomes by number instead of strings
-//        // [first_outcome,first_outcome,second_outcome,third_outcome] -> [0,0,1,2]
-//        ArrayList<Integer> list = new ArrayList<>();
-//        //First we will initilize the first element of 'list' by finding his index in current_Varuable.outcome
-//        for (int i = 0; i < outcomes.size(); i++) {
-//            if (given_outcomes.get(0).equals(outcomes.get(i))) {
-//                list.add(i);
-//            }
-//        }
-//
-//        //Then initialize all the other given outcome indexes in given_outcome to list.
-//        for (int i = 1; i < given_outcomes.size(); i++) {
-//            for (int j = 0; j < parents.size(); j++) {
-//                for (int k = 0; k < parents.get(j).outcomes.size(); k++) {
-//                    if (given_outcomes.get(i).equals(parents.get(j).outcomes.get(k))) {
-//                        list.add(k);
-//                        //if we found one-> set it to "" to remove duplicates
-//                        given_outcomes.set(i, "");
-//                    }
-//                }
-//            }
-//        }
-//
-//
-//        //Calculate our index
-//        //Formula -> First index + SUM (list[i]*number_of_variables*i) i=1 to list.size
-//        index += list.get(0);
-//        for (int i = 1; i < list.size(); i++) {
-//            index += (list.get(i) * outcomes.size() * (i));
-//        }
-        //return CPT.get(index);
     }
 
     private void BuildCPT_Table() {
@@ -208,17 +166,14 @@ public class Variable {
         int parentIndex = 0;
         product = outcomes.size();
         //For each col expect from first
-        //System.out.println(parents);
         ArrayList<Variable> reverseParents = new ArrayList<>();
         for (int i = parents.size() - 1; i >= 0; i--) {
             reverseParents.add(parents.get(i));
         }
-        //System.out.println(reverseParents);
         ArrayList<Integer> countList = new ArrayList<>();
         for (int i = 0; i < reverseParents.size(); i++) {
             countList.add(reverseParents.get(i).getOutcomes().size());
         }
-        //System.out.println(countList);
         if (countList.size() != 0) {
             fillMatrix(matrix, countList, reverseParents, 1, reverseParents.size() + 1, outcomes.size());
         }
@@ -247,7 +202,6 @@ public class Variable {
             CPT_Array_Index++;
         }
 
-
         ArrayList<Variable> factorVariables=new ArrayList<>();
         factorVariables.add(this);
         for (int i =  parents.size()-1; i >= 0; i--) {
@@ -255,7 +209,6 @@ public class Variable {
         }
         factor=new Factor(CPT,factorVariables);
     }
-
 
     /**
      * Fill matrix function is a helper function to fill up matrix,
@@ -302,6 +255,11 @@ public class Variable {
     }
 
 
+
+    /**
+     * Function to print matrix for debugging
+     * @param matrix
+     */
     private void printMatrix(String[][] matrix) {
         for (int i = 0; i < matrix.length; i++) {
             for (int j = 0; j < matrix[i].length; j++) {

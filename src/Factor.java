@@ -1,5 +1,5 @@
-import java.util.ArrayList;
-import java.util.HashMap;
+import javax.crypto.spec.PSource;
+import java.util.*;
 
 public class Factor {
     /**
@@ -33,6 +33,7 @@ public class Factor {
         index=index_count;
         index_count++;
         //Create the name of the Factor
+        //Initialize Variables names arraylist
         name="";
         for (int i = 0; i < variables.size(); i++) {
             name+=variables.get(i).getName();
@@ -40,11 +41,10 @@ public class Factor {
             {
                 name+=",";
             }
-        }
-        //Initialize Variables names arraylist
-        for (int i = 0; i < variables.size(); i++) {
             variables_names.add(variables.get(i).getName());
         }
+
+
         //To create the hashmap -> we first need to iterate over all the combinations of the possible outcomes of our variables.
         //To to this we first create a table of size product_of_outcomes * numbe.
 
@@ -68,18 +68,43 @@ public class Factor {
                 {
                     key+=",";
                 }
-
             }
             table.put(key,CPT.get(i));
         }
-
-
-
-
-
-
     }
 
+    /**
+     * Called From Elimination function
+     */
+    public Factor(ArrayList<Variable> variables,HashMap<String,Double> table){
+
+        variables_names=new ArrayList<>();
+        this.table=table;
+        this.variablesOfCurrentFactor=variables;
+        //Indexing the factor
+        index=index_count;
+        index_count++;
+        //Generate Variable arraylist of names
+        name="";
+        for (int i = 0; i < variables.size(); i++) {
+            name+=variables.get(i).getName();
+            if(i!=variables.size()-1)
+            {
+                name+=",";
+            }
+            variables_names.add(variables.get(i).getName());
+        }
+    }
+
+    /**
+     * Private function that fills out matrix of variables with all their possible combination
+     * @param matrix
+     * @param outcomes_count_per_var
+     * @param variables
+     * @param start
+     * @param end
+     * @param product
+     */
     static void fillMatrix(String[][] matrix, ArrayList<Integer> outcomes_count_per_var, ArrayList<Variable> variables, int start, int end, int product) {
         //Stop Condition -> In this case we finished filling our table
         if (start == end) {
@@ -123,6 +148,14 @@ public class Factor {
      */
     public static Factor Join(Factor factor1,Factor factor2)
     {
+        if(factor1.table.size()==1)
+        {
+            return factor2;
+        }
+        if(factor2.table.size()==1)
+        {
+            return factor1;
+        }
         //Get variables for the new Factor.
         ArrayList<Variable> variablesOfNewFactor=new ArrayList<>();
         variablesOfNewFactor.addAll(factor1.variablesOfCurrentFactor);
@@ -132,9 +165,7 @@ public class Factor {
                 variablesOfNewFactor.add(factor2.variablesOfCurrentFactor.get(i));
             }
         }
-        for (int i = 0; i < variablesOfNewFactor.size(); i++) {
-            System.out.println(variablesOfNewFactor.get(i).getName());
-        }
+
         //Construct Matrix represent all values of variables outcomes.
         int product =1;
         for (int i = 0; i < variablesOfNewFactor.size(); i++) {
@@ -147,8 +178,6 @@ public class Factor {
         }
 
         fillMatrix(matrix,outcomes_count_per_var,variablesOfNewFactor,0,variablesOfNewFactor.size(),1);
-        System.out.println();
-        //printMatrix(matrix);
 
         ArrayList<Double> probabilities=new ArrayList<>();
 
@@ -167,7 +196,6 @@ public class Factor {
                 }
             }
             key_first_factor=key_first_factor.substring(0,key_first_factor.length()-1);
-            //System.out.println(key_first_factor);
 
 
 
@@ -183,7 +211,13 @@ public class Factor {
                     }
                 }
             }
+
+
+
             key_sec_factor=key_sec_factor.substring(0,key_sec_factor.length()-1);
+
+
+
 
             Double firstProb=factor1.table.get(key_first_factor);
             Double secProb=factor2.table.get(key_sec_factor);
@@ -192,24 +226,167 @@ public class Factor {
             probabilities.add(firstProb*secProb);
 
         }
-        Factor factor = new Factor(probabilities,variablesOfNewFactor);
-        System.out.println(factor.table);
 
-        return factor;
+        return new Factor(probabilities,variablesOfNewFactor);
     }
 
     /**
      * Eliminate variable from our factor.
-     * @param variable
+     * Return a new Factor - after elimination of @variableToEliminate
+     * @param variableToEliminate
      */
-    public void Eliminate(String variable)
+    public Factor Eliminate(String variableToEliminate)
+    {
+        //Create a list of all the variables that will stay after elimination
+        ArrayList<Variable> variablesAfterElimination=new ArrayList<>();
+        //Index representing the variableToEliminate Index of our variable list
+        int indexOfVariableToEliminate=-1;
+        Variable eliminatedVariable = new Variable("NULL",new ArrayList<>());
+        for (int i = 0; i < variablesOfCurrentFactor.size(); i++) {
+            if (!variablesOfCurrentFactor.get(i).getName().equals(variableToEliminate))
+            {
+                variablesAfterElimination.add(variablesOfCurrentFactor.get(i));
+            }
+            else {
+                indexOfVariableToEliminate=i;
+                eliminatedVariable=variablesOfCurrentFactor.get(i);
+            }
+        }
+        if(indexOfVariableToEliminate==-1)
+        {
+            return this;
+        }
+
+        //Create a matrix representing all the combination of our remaining variables
+
+        //To create the matrix we need to know the matrix size which is product*var_size
+        int product =1;
+        for (int i = 0; i < variablesAfterElimination.size(); i++) {
+            product*=variablesAfterElimination.get(i).getOutcomes().size();
+        }
+
+        String [][] matrix = new String[product][variablesAfterElimination.size()];
+
+        //To fill the matrix we need Arraylist of size of outcomes of each variable
+        ArrayList<Integer> outcomes_count_per_var=new ArrayList<>();
+        for (int i = 0; i < variablesAfterElimination.size(); i++) {
+            outcomes_count_per_var.add(variablesAfterElimination.get(i).getOutcomes().size());
+        }
+        fillMatrix(matrix,outcomes_count_per_var,variablesAfterElimination,0,variablesAfterElimination.size(),1);
+
+
+
+        HashMap<String,Double> newMap=new HashMap<>();
+
+
+        for (int i = 0; i < matrix.length; i++) {
+            //For each combination -> we will sum all possible outcome for the variable we eliminated.
+            Double sum=0.0;
+            //Calculate sum
+            for (int j = 0; j < eliminatedVariable.getOutcomes().size(); j++) {
+                String key="";
+                for (int k = 0; k < matrix[i].length; k++) {
+                    if(k==indexOfVariableToEliminate)
+                    {
+                        key+=eliminatedVariable.getName();
+                        key+="=";
+                        key+=eliminatedVariable.getOutcomes().get(j);
+                        key+=",";
+                    }
+                    key+=matrix[i][k];
+                    if(k!= matrix[i].length-1){
+                        key+=",";
+                    }
+                }
+                if(indexOfVariableToEliminate==matrix[i].length)
+                {
+                    key+=",";
+                    key+=eliminatedVariable.getName();
+                    key+="=";
+                    key+=eliminatedVariable.getOutcomes().get(j);
+                }
+
+
+
+                sum+=table.get(key);
+            }
+            //Generate new key
+            String newKey="";
+            for (int j = 0; j < matrix[0].length; j++) {
+                newKey+=matrix[i][j];
+                if(j!=matrix[0].length-1)
+                {
+                    newKey+=",";
+                }
+            }
+            newMap.put(newKey,sum);
+        }
+
+
+        return new Factor(variablesAfterElimination,newMap);
+    }
+    /**
+     * Input is of the form evidence=output.
+     * Return new factor without the evidence.
+     * @param evidence
+     * @return
+     */
+    public Factor placeEvidence(String evidence)
     {
 
+        HashMap<String,Double> newMap=new HashMap<>();
+        for (Map.Entry<String, Double> set :
+                table.entrySet()) {
+            //Check if the current key contains our evidence
+            if(set.getKey().contains(evidence))
+            {
+                String currentKey = set.getKey();
+                ArrayList<String> varAfterPlace=new ArrayList<>();
+                List<String> items = Arrays.asList(currentKey.split("\\s*,\\s*"));
+                for (int i = 0; i <items.size() ; i++) {
+                    if (!items.get(i).equals(evidence))
+                    {
+                        varAfterPlace.add(items.get(i));
+                    }
+                }
+
+
+                //Construct key
+                String key="";
+                for (int i = 0; i < varAfterPlace.size(); i++) {
+                    key+=varAfterPlace.get(i);
+                    if(i!=varAfterPlace.size()-1)
+                    {
+                        key+=",";
+                    }
+                }
+                newMap.put(key, set.getValue());
+            }
+            else if(!set.getKey().contains(evidence.substring(0,evidence.indexOf("="))))
+            {
+                newMap.put(set.getKey(),set.getValue());
+            }
+        }
+
+
+        //Construct new variables to new factor
+        ArrayList<Variable> newFactorVariables=new ArrayList<>();
+        String PlaceVarName = evidence.substring(0,evidence.indexOf("="));
+        for (int i = 0; i < variablesOfCurrentFactor.size(); i++) {
+            if(!variablesOfCurrentFactor.get(i).getName().equals(PlaceVarName))
+            {
+                newFactorVariables.add(variablesOfCurrentFactor.get(i));
+            }
+        }
+
+
+        return new Factor(newFactorVariables,newMap);
     }
 
-
-
-
+    /**
+     * Private function to print matrix
+     * @param matrix
+     */
     private static void printMatrix(String[][] matrix) {
         for (int i = 0; i < matrix.length; i++) {
             for (int j = 0; j < matrix[i].length; j++) {
