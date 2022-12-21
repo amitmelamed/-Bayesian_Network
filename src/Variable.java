@@ -20,6 +20,12 @@ public class Variable {
     public HashMap<String, Double> CPT_Table;
     public Factor factor;
 
+    public int getParentCount() {
+        return parentCount;
+    }
+
+    public int parentCount;
+
     /**
      * Constructor
      *
@@ -33,6 +39,7 @@ public class Variable {
         childrens = new ArrayList<>();
         CPT = new ArrayList<>();
         CPT_Table = new HashMap<>();
+        parentCount = 0;
     }
 
     /**
@@ -79,6 +86,7 @@ public class Variable {
      */
     public void addParent(Variable parent) {
         parents.add(parent);
+        parentCount++;
     }
 
     /**
@@ -136,14 +144,12 @@ public class Variable {
         } else {
             key += given_outcomes.get(0);
             key += "|";
-            for (int j = 1; j <given_outcomes.size(); j++) {
-                key+=given_outcomes.get(j);
-                if(j==given_outcomes.size()-1)
-                {
-                    key+=")";
-                }else
-                {
-                    key+=",";
+            for (int j = 1; j < given_outcomes.size(); j++) {
+                key += given_outcomes.get(j);
+                if (j == given_outcomes.size() - 1) {
+                    key += ")";
+                } else {
+                    key += ",";
                 }
             }
         }
@@ -178,7 +184,7 @@ public class Variable {
             fillMatrix(matrix, countList, reverseParents, 1, reverseParents.size() + 1, outcomes.size());
         }
         //Fill key from table to String form
-        int CPT_Array_Index=0;
+        int CPT_Array_Index = 0;
         for (int i = 0; i < matrix.length; i++) {
             String key = "P(";
             if (matrix[i].length == 1) {
@@ -187,39 +193,38 @@ public class Variable {
             } else {
                 key += matrix[i][0];
                 key += "|";
-                for (int j = 1; j <matrix[i].length; j++) {
-                    key+=matrix[i][j];
-                    if(j==matrix[i].length-1)
-                    {
-                        key+=")";
-                    }else
-                    {
-                        key+=",";
+                for (int j = 1; j < matrix[i].length; j++) {
+                    key += matrix[i][j];
+                    if (j == matrix[i].length - 1) {
+                        key += ")";
+                    } else {
+                        key += ",";
                     }
                 }
             }
-            CPT_Table.put(key,CPT.get(CPT_Array_Index));
+            CPT_Table.put(key, CPT.get(CPT_Array_Index));
             CPT_Array_Index++;
         }
 
-        ArrayList<Variable> factorVariables=new ArrayList<>();
+        ArrayList<Variable> factorVariables = new ArrayList<>();
         factorVariables.add(this);
-        for (int i =  parents.size()-1; i >= 0; i--) {
+        for (int i = parents.size() - 1; i >= 0; i--) {
             factorVariables.add(parents.get(i));
         }
-        factor=new Factor(CPT,factorVariables);
+        factor = new Factor(CPT, factorVariables);
     }
 
     /**
      * Fill matrix function is a helper function to fill up matrix,
      * representing all the combinations of our CPT table by the correct order.
      * This function fill the matrix recursively, each iteration - different column.
-     * @param matrix - matrix to be filled
+     *
+     * @param matrix                 - matrix to be filled
      * @param outcomes_count_per_var - each index of the array represent the outcomes count of the variables[i] variable.
-     * @param variables - variables to be filled in the correct order.
-     * @param start - the current column to fill
-     * @param end - Stop condition
-     * @param product - how many indexes to fill with same symbol each coll in a row.
+     * @param variables              - variables to be filled in the correct order.
+     * @param start                  - the current column to fill
+     * @param end                    - Stop condition
+     * @param product                - how many indexes to fill with same symbol each coll in a row.
      */
     void fillMatrix(String[][] matrix, ArrayList<Integer> outcomes_count_per_var, ArrayList<Variable> variables, int start, int end, int product) {
         //Stop Condition -> In this case we finished filling our table
@@ -255,9 +260,9 @@ public class Variable {
     }
 
 
-
     /**
      * Function to print matrix for debugging
+     *
      * @param matrix
      */
     private void printMatrix(String[][] matrix) {

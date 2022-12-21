@@ -146,13 +146,13 @@ public class Factor {
      * @param factor2
      * @return
      */
-    public static Factor Join(Factor factor1,Factor factor2)
+    public static Factor Join(Factor factor1,Factor factor2,Query query)
     {
-        if(factor1.table.size()==1)
+        if(factor1.table.size()<=1 )
         {
             return factor2;
         }
-        if(factor2.table.size()==1)
+        if(factor2.table.size()<=1)
         {
             return factor1;
         }
@@ -169,9 +169,11 @@ public class Factor {
         //Construct Matrix represent all values of variables outcomes.
         int product =1;
         for (int i = 0; i < variablesOfNewFactor.size(); i++) {
+
             product*=variablesOfNewFactor.get(i).getOutcomes().size();
         }
         String [][] matrix = new String[product][variablesOfNewFactor.size()];
+
         ArrayList<Integer> outcomes_count_per_var=new ArrayList<>();
         for (int i = 0; i < variablesOfNewFactor.size(); i++) {
             outcomes_count_per_var.add(variablesOfNewFactor.get(i).getOutcomes().size());
@@ -191,6 +193,7 @@ public class Factor {
                     if(factor1.variables_names.get(j).equals(nameOfCurrentMatrixVar))
                     {
                         key_first_factor+=factor1.variables_names.get(j)+matrix[i][k].substring(matrix[i][k].indexOf("="));
+
                         key_first_factor+=",";
                     }
                 }
@@ -215,18 +218,28 @@ public class Factor {
 
 
             key_sec_factor=key_sec_factor.substring(0,key_sec_factor.length()-1);
-
-
-
-
             Double firstProb=factor1.table.get(key_first_factor);
             Double secProb=factor2.table.get(key_sec_factor);
+            if(firstProb==null)
+            {
+                return factor2;
+            }
+            if(secProb==null)
+            {
+                return factor1;
+            }
+            else
+            {
+                probabilities.add(firstProb*secProb);
+                query.algorithm_2_multi_count++;
 
-
-            probabilities.add(firstProb*secProb);
-
+            }
         }
 
+
+        System.out.println();
+        System.out.println(probabilities);
+        System.out.println();
         return new Factor(probabilities,variablesOfNewFactor);
     }
 
@@ -235,7 +248,7 @@ public class Factor {
      * Return a new Factor - after elimination of @variableToEliminate
      * @param variableToEliminate
      */
-    public Factor Eliminate(String variableToEliminate)
+    public Factor Eliminate(String variableToEliminate,Query query)
     {
         //Create a list of all the variables that will stay after elimination
         ArrayList<Variable> variablesAfterElimination=new ArrayList<>();
@@ -308,7 +321,15 @@ public class Factor {
 
 
 
+
+                if(sum!=0 && variablesAfterElimination.size()>0)
+                {
+                    query.algorithm_2_add_count++;
+
+                }
                 sum+=table.get(key);
+
+
             }
             //Generate new key
             String newKey="";
@@ -333,7 +354,6 @@ public class Factor {
      */
     public Factor placeEvidence(String evidence)
     {
-
         HashMap<String,Double> newMap=new HashMap<>();
         for (Map.Entry<String, Double> set :
                 table.entrySet()) {
