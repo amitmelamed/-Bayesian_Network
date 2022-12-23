@@ -20,11 +20,17 @@ public class Variable {
     public HashMap<String, Double> CPT_Table;
     public Factor factor;
 
+    public int heuristicFactor;
+
     public int getParentCount() {
         return parentCount;
     }
 
     public int parentCount;
+
+    public int getHeuristicFactor() {
+        return heuristicFactor;
+    }
 
     /**
      * Constructor
@@ -40,11 +46,14 @@ public class Variable {
         CPT = new ArrayList<>();
         CPT_Table = new HashMap<>();
         parentCount = 0;
+        heuristicFactor=0;
+
     }
 
     /**
      * Getters
      */
+
     public String getName() {
         return name;
     }
@@ -106,7 +115,7 @@ public class Variable {
      */
     @Override
     public String toString() {
-        String variableString = "Variable Name : " + name + " ";
+        String variableString = " " + name + " ";
 //        for (int i = 0; i < outcomes.size(); i++) {
 //            variableString += ("Outcome : " + outcomes.get(i) + '\n');
 //        }
@@ -273,4 +282,14 @@ public class Variable {
             System.out.println();
         }
     }
+
+    public int getParentOutcomeCount()
+    {
+        int i=0;
+        for (int j = 0; j < parents.size(); j++) {
+            i+=parents.get(j).outcomes.size();
+        }
+        return i;
+    }
+
 }

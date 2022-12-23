@@ -6,98 +6,99 @@ public class Factor {
      * name variable form is: "v1,v2,...,vn"
      * Where v1,v2,...vn are the variables in the given factor.
      */
-    public String name;
+    public final String name;
     /**
      * table is the Truth Table of the Factor.
      * The key is String of the form:
      * P(v1=outcome_1,v2=outcome_2,...,vn=outcome_n)
      * the value is the probability of this query to happen.
      */
-    public HashMap<String,Double> table;
+    public HashMap<String, Double> table;
     public ArrayList<String> variables_names;
     public ArrayList<Variable> variablesOfCurrentFactor;
-    private static int index_count=1;
+    private static int index_count = 1;
     private int index;
 
     /**
      * Constructor that called from Variable class
+     *
      * @param CPT
      * @param variables
      */
-    public Factor(ArrayList<Double> CPT,  ArrayList<Variable> variables)
-    {
-        this.variablesOfCurrentFactor=variables;
-        table=new HashMap<>();
-        variables_names=new ArrayList<>();
+    public Factor(ArrayList<Double> CPT, ArrayList<Variable> variables) {
+        this.variablesOfCurrentFactor = variables;
+        table = new HashMap<>();
+        variables_names = new ArrayList<>();
         //Indexing the factor
-        index=index_count;
+        index = index_count;
         index_count++;
         //Create the name of the Factor
         //Initialize Variables names arraylist
-        name="";
+        String nameBuild = "";
         for (int i = 0; i < variables.size(); i++) {
-            name+=variables.get(i).getName();
-            if(i!=variables.size()-1)
-            {
-                name+=",";
+            nameBuild += variables.get(i).getName();
+            if (i != variables.size() - 1) {
+                nameBuild += ",";
             }
             variables_names.add(variables.get(i).getName());
         }
+        name=nameBuild;
 
 
         //To create the hashmap -> we first need to iterate over all the combinations of the possible outcomes of our variables.
         //To to this we first create a table of size product_of_outcomes * numbe.
 
-        int product =1;
+        int product = 1;
         for (int i = 0; i < variables.size(); i++) {
-            product*=variables.get(i).getOutcomes().size();
+            product *= variables.get(i).getOutcomes().size();
         }
-        String [][] matrix =new String[product][variables.size()];
+        String[][] matrix = new String[product][variables.size()];
 
         //After we create the matrix: we need to fill in the possible outcomes.
-        ArrayList<Integer> outcomes_count_per_var=new ArrayList<>();
+        ArrayList<Integer> outcomes_count_per_var = new ArrayList<>();
         for (int i = 0; i < variables.size(); i++) {
             outcomes_count_per_var.add(variables.get(i).getOutcomes().size());
         }
-        fillMatrix(matrix,outcomes_count_per_var,variables,0,variables.size(),1);
+        fillMatrix(matrix, outcomes_count_per_var, variables, 0, variables.size(), 1);
         for (int i = 0; i < matrix.length; i++) {
-            String key="";
+            String key = "";
             for (int j = 0; j < matrix[i].length; j++) {
-                key+=matrix[i][j];
-                if(j!= matrix[i].length-1)
-                {
-                    key+=",";
+                key += matrix[i][j];
+                if (j != matrix[i].length - 1) {
+                    key += ",";
                 }
             }
-            table.put(key,CPT.get(i));
+            table.put(key, CPT.get(i));
         }
     }
 
     /**
      * Called From Elimination function
      */
-    public Factor(ArrayList<Variable> variables,HashMap<String,Double> table){
+    public Factor(ArrayList<Variable> variables, HashMap<String, Double> table) {
 
-        variables_names=new ArrayList<>();
-        this.table=table;
-        this.variablesOfCurrentFactor=variables;
+        variables_names = new ArrayList<>();
+        this.table = table;
+        this.variablesOfCurrentFactor = variables;
         //Indexing the factor
-        index=index_count;
+        index = index_count;
         index_count++;
         //Generate Variable arraylist of names
-        name="";
+        String nameBuild="";
+
         for (int i = 0; i < variables.size(); i++) {
-            name+=variables.get(i).getName();
-            if(i!=variables.size()-1)
-            {
-                name+=",";
+            nameBuild += variables.get(i).getName();
+            if (i != variables.size() - 1) {
+                nameBuild += ",";
             }
             variables_names.add(variables.get(i).getName());
         }
+        name=nameBuild;
     }
 
     /**
      * Private function that fills out matrix of variables with all their possible combination
+     *
      * @param matrix
      * @param outcomes_count_per_var
      * @param variables
@@ -122,16 +123,16 @@ public class Factor {
             while (iteration < matrix.length) {
                 //Fill
                 for (int i = 0; i < product; i++) {
-                    matrix[iteration][start] = variables.get(start ).getName() + "=" + variables.get(start ).getOutcomes().get(j);
+                    matrix[iteration][start] = variables.get(start).getName() + "=" + variables.get(start).getOutcomes().get(j);
                     iteration++;
                     if (iteration == matrix.length) {
                         break;
                     }
                 }
                 j++;
-                j = j % outcomes_count_per_var.get(start );
+                j = j % outcomes_count_per_var.get(start);
             }
-            product *= outcomes_count_per_var.get(start );
+            product *= outcomes_count_per_var.get(start);
 
         }
         //Recursively call the function to fill the next coll
@@ -142,46 +143,47 @@ public class Factor {
     /**
      * Static function that get two factors and operate "Join" on them.
      * return the result as new Factor variable.
+     *
      * @param factor1
      * @param factor2
      * @return
      */
-    public static Factor Join(Factor factor1,Factor factor2,Query query)
-    {
-        if(factor1.table.size()<=1 )
-        {
+    public static Factor Join(Factor factor1, Factor factor2, Query query) {
+
+        if (factor1.table.size() <= 1) {
             return factor2;
         }
-        if(factor2.table.size()<=1)
-        {
+        if (factor2.table.size() <= 1) {
+            return factor1;
+        }
+        if (factor1 == factor2) {
             return factor1;
         }
         //Get variables for the new Factor.
-        ArrayList<Variable> variablesOfNewFactor=new ArrayList<>();
+        ArrayList<Variable> variablesOfNewFactor = new ArrayList<>();
         variablesOfNewFactor.addAll(factor1.variablesOfCurrentFactor);
         for (int i = 0; i < factor2.variablesOfCurrentFactor.size(); i++) {
-            if(!variablesOfNewFactor.contains(factor2.variablesOfCurrentFactor.get(i)))
-            {
+            if (!variablesOfNewFactor.contains(factor2.variablesOfCurrentFactor.get(i))) {
                 variablesOfNewFactor.add(factor2.variablesOfCurrentFactor.get(i));
             }
         }
 
         //Construct Matrix represent all values of variables outcomes.
-        int product =1;
+        int product = 1;
         for (int i = 0; i < variablesOfNewFactor.size(); i++) {
 
-            product*=variablesOfNewFactor.get(i).getOutcomes().size();
+            product *= variablesOfNewFactor.get(i).getOutcomes().size();
         }
-        String [][] matrix = new String[product][variablesOfNewFactor.size()];
+        String[][] matrix = new String[product][variablesOfNewFactor.size()];
 
-        ArrayList<Integer> outcomes_count_per_var=new ArrayList<>();
+        ArrayList<Integer> outcomes_count_per_var = new ArrayList<>();
         for (int i = 0; i < variablesOfNewFactor.size(); i++) {
             outcomes_count_per_var.add(variablesOfNewFactor.get(i).getOutcomes().size());
         }
 
-        fillMatrix(matrix,outcomes_count_per_var,variablesOfNewFactor,0,variablesOfNewFactor.size(),1);
+        fillMatrix(matrix, outcomes_count_per_var, variablesOfNewFactor, 0, variablesOfNewFactor.size(), 1);
 
-        ArrayList<Double> probabilities=new ArrayList<>();
+        ArrayList<Double> probabilities = new ArrayList<>();
 
         //Probabilities of the i row
         for (int i = 0; i < matrix.length; i++) {
@@ -189,222 +191,199 @@ public class Factor {
             String key_first_factor = "";
             for (int j = 0; j < factor1.variables_names.size(); j++) {
                 for (int k = 0; k < matrix[i].length; k++) {
-                    String nameOfCurrentMatrixVar=matrix[i][k].substring(0,matrix[i][k].indexOf("="));
-                    if(factor1.variables_names.get(j).equals(nameOfCurrentMatrixVar))
-                    {
-                        key_first_factor+=factor1.variables_names.get(j)+matrix[i][k].substring(matrix[i][k].indexOf("="));
+                    String nameOfCurrentMatrixVar = matrix[i][k].substring(0, matrix[i][k].indexOf("="));
+                    if (factor1.variables_names.get(j).equals(nameOfCurrentMatrixVar)) {
+                        key_first_factor += factor1.variables_names.get(j) + matrix[i][k].substring(matrix[i][k].indexOf("="));
 
-                        key_first_factor+=",";
+                        key_first_factor += ",";
                     }
                 }
             }
-            key_first_factor=key_first_factor.substring(0,key_first_factor.length()-1);
-
+            key_first_factor = key_first_factor.substring(0, key_first_factor.length() - 1);
 
 
             //Get prob from second Factor
             String key_sec_factor = "";
             for (int j = 0; j < factor2.variables_names.size(); j++) {
                 for (int k = 0; k < matrix[i].length; k++) {
-                    String nameOfCurrentMatrixVar=matrix[i][k].substring(0,matrix[i][k].indexOf("="));
-                    if(factor2.variables_names.get(j).equals(nameOfCurrentMatrixVar))
-                    {
-                        key_sec_factor+=factor2.variables_names.get(j)+matrix[i][k].substring(matrix[i][k].indexOf("="));
-                        key_sec_factor+=",";
+                    String nameOfCurrentMatrixVar = matrix[i][k].substring(0, matrix[i][k].indexOf("="));
+                    if (factor2.variables_names.get(j).equals(nameOfCurrentMatrixVar)) {
+                        key_sec_factor += factor2.variables_names.get(j) + matrix[i][k].substring(matrix[i][k].indexOf("="));
+                        key_sec_factor += ",";
                     }
                 }
             }
 
 
-
-            key_sec_factor=key_sec_factor.substring(0,key_sec_factor.length()-1);
-            Double firstProb=factor1.table.get(key_first_factor);
-            Double secProb=factor2.table.get(key_sec_factor);
-            if(firstProb==null)
-            {
+            key_sec_factor = key_sec_factor.substring(0, key_sec_factor.length() - 1);
+            Double firstProb = factor1.table.get(key_first_factor);
+            Double secProb = factor2.table.get(key_sec_factor);
+            if (firstProb == null) {
                 return factor2;
             }
-            if(secProb==null)
-            {
+            if (secProb == null) {
                 return factor1;
-            }
-            else
-            {
-                probabilities.add(firstProb*secProb);
+            } else {
+                probabilities.add(firstProb * secProb);
                 query.algorithm_2_multi_count++;
-
             }
         }
 
-
-        System.out.println();
-        System.out.println(probabilities);
-        System.out.println();
-        return new Factor(probabilities,variablesOfNewFactor);
+        return new Factor(probabilities, variablesOfNewFactor);
     }
 
     /**
      * Eliminate variable from our factor.
      * Return a new Factor - after elimination of @variableToEliminate
+     *
      * @param variableToEliminate
      */
-    public Factor Eliminate(String variableToEliminate,Query query)
-    {
+    public Factor Eliminate(String variableToEliminate, Query query) {
         //Create a list of all the variables that will stay after elimination
-        ArrayList<Variable> variablesAfterElimination=new ArrayList<>();
+        ArrayList<Variable> variablesAfterElimination = new ArrayList<>();
         //Index representing the variableToEliminate Index of our variable list
-        int indexOfVariableToEliminate=-1;
-        Variable eliminatedVariable = new Variable("NULL",new ArrayList<>());
+        int indexOfVariableToEliminate = -1;
+        Variable eliminatedVariable = new Variable("NULL", new ArrayList<>());
         for (int i = 0; i < variablesOfCurrentFactor.size(); i++) {
-            if (!variablesOfCurrentFactor.get(i).getName().equals(variableToEliminate))
-            {
+            if (!variablesOfCurrentFactor.get(i).getName().equals(variableToEliminate)) {
                 variablesAfterElimination.add(variablesOfCurrentFactor.get(i));
-            }
-            else {
-                indexOfVariableToEliminate=i;
-                eliminatedVariable=variablesOfCurrentFactor.get(i);
+            } else {
+                indexOfVariableToEliminate = i;
+                eliminatedVariable = variablesOfCurrentFactor.get(i);
             }
         }
-        if(indexOfVariableToEliminate==-1)
-        {
+        if (indexOfVariableToEliminate == -1) {
             return this;
         }
 
         //Create a matrix representing all the combination of our remaining variables
 
         //To create the matrix we need to know the matrix size which is product*var_size
-        int product =1;
+        int product = 1;
         for (int i = 0; i < variablesAfterElimination.size(); i++) {
-            product*=variablesAfterElimination.get(i).getOutcomes().size();
+            product *= variablesAfterElimination.get(i).getOutcomes().size();
         }
 
-        String [][] matrix = new String[product][variablesAfterElimination.size()];
+        String[][] matrix = new String[product][variablesAfterElimination.size()];
 
         //To fill the matrix we need Arraylist of size of outcomes of each variable
-        ArrayList<Integer> outcomes_count_per_var=new ArrayList<>();
+        ArrayList<Integer> outcomes_count_per_var = new ArrayList<>();
         for (int i = 0; i < variablesAfterElimination.size(); i++) {
             outcomes_count_per_var.add(variablesAfterElimination.get(i).getOutcomes().size());
         }
-        fillMatrix(matrix,outcomes_count_per_var,variablesAfterElimination,0,variablesAfterElimination.size(),1);
+        fillMatrix(matrix, outcomes_count_per_var, variablesAfterElimination, 0, variablesAfterElimination.size(), 1);
 
 
-
-        HashMap<String,Double> newMap=new HashMap<>();
+        HashMap<String, Double> newMap = new HashMap<>();
 
 
         for (int i = 0; i < matrix.length; i++) {
             //For each combination -> we will sum all possible outcome for the variable we eliminated.
-            Double sum=0.0;
+            Double sum = 0.0;
             //Calculate sum
             for (int j = 0; j < eliminatedVariable.getOutcomes().size(); j++) {
-                String key="";
+                String key = "";
                 for (int k = 0; k < matrix[i].length; k++) {
-                    if(k==indexOfVariableToEliminate)
-                    {
-                        key+=eliminatedVariable.getName();
-                        key+="=";
-                        key+=eliminatedVariable.getOutcomes().get(j);
-                        key+=",";
+                    if (k == indexOfVariableToEliminate) {
+                        key += eliminatedVariable.getName();
+                        key += "=";
+                        key += eliminatedVariable.getOutcomes().get(j);
+                        key += ",";
                     }
-                    key+=matrix[i][k];
-                    if(k!= matrix[i].length-1){
-                        key+=",";
+                    key += matrix[i][k];
+                    if (k != matrix[i].length - 1) {
+                        key += ",";
                     }
                 }
-                if(indexOfVariableToEliminate==matrix[i].length)
-                {
-                    key+=",";
-                    key+=eliminatedVariable.getName();
-                    key+="=";
-                    key+=eliminatedVariable.getOutcomes().get(j);
+                if (indexOfVariableToEliminate == matrix[i].length) {
+                    key += ",";
+                    key += eliminatedVariable.getName();
+                    key += "=";
+                    key += eliminatedVariable.getOutcomes().get(j);
                 }
 
 
-
-
-                if(sum!=0 && variablesAfterElimination.size()>0)
-                {
+                if (sum != 0 && variablesAfterElimination.size() > 0) {
                     query.algorithm_2_add_count++;
 
                 }
-                sum+=table.get(key);
+                if (key.charAt(0) == ',') {
+                    key = key.substring(1);
+                }
+                //System.out.println(key);
+                sum += table.get(key);
 
 
             }
             //Generate new key
-            String newKey="";
+            String newKey = "";
             for (int j = 0; j < matrix[0].length; j++) {
-                newKey+=matrix[i][j];
-                if(j!=matrix[0].length-1)
-                {
-                    newKey+=",";
+                newKey += matrix[i][j];
+                if (j != matrix[0].length - 1) {
+                    newKey += ",";
                 }
             }
-            newMap.put(newKey,sum);
+            newMap.put(newKey, sum);
         }
 
 
-        return new Factor(variablesAfterElimination,newMap);
+        return new Factor(variablesAfterElimination, newMap);
     }
+
     /**
      * Input is of the form evidence=output.
      * Return new factor without the evidence.
+     *
      * @param evidence
      * @return
      */
-    public Factor placeEvidence(String evidence)
-    {
-        HashMap<String,Double> newMap=new HashMap<>();
+    public Factor placeEvidence(String evidence) {
+        HashMap<String, Double> newMap = new HashMap<>();
         for (Map.Entry<String, Double> set :
                 table.entrySet()) {
             //Check if the current key contains our evidence
-            if(set.getKey().contains(evidence))
-            {
+            if (set.getKey().contains(evidence)) {
                 String currentKey = set.getKey();
-                ArrayList<String> varAfterPlace=new ArrayList<>();
+                ArrayList<String> varAfterPlace = new ArrayList<>();
                 List<String> items = Arrays.asList(currentKey.split("\\s*,\\s*"));
-                for (int i = 0; i <items.size() ; i++) {
-                    if (!items.get(i).equals(evidence))
-                    {
+                for (int i = 0; i < items.size(); i++) {
+                    if (!items.get(i).equals(evidence)) {
                         varAfterPlace.add(items.get(i));
                     }
                 }
 
 
                 //Construct key
-                String key="";
+                String key = "";
                 for (int i = 0; i < varAfterPlace.size(); i++) {
-                    key+=varAfterPlace.get(i);
-                    if(i!=varAfterPlace.size()-1)
-                    {
-                        key+=",";
+                    key += varAfterPlace.get(i);
+                    if (i != varAfterPlace.size() - 1) {
+                        key += ",";
                     }
                 }
                 newMap.put(key, set.getValue());
-            }
-            else if(!set.getKey().contains(evidence.substring(0,evidence.indexOf("="))))
-            {
-                newMap.put(set.getKey(),set.getValue());
+            } else if (!set.getKey().contains(evidence.substring(0, evidence.indexOf("=")))) {
+                newMap.put(set.getKey(), set.getValue());
             }
         }
 
 
         //Construct new variables to new factor
-        ArrayList<Variable> newFactorVariables=new ArrayList<>();
-        String PlaceVarName = evidence.substring(0,evidence.indexOf("="));
+        ArrayList<Variable> newFactorVariables = new ArrayList<>();
+        String PlaceVarName = evidence.substring(0, evidence.indexOf("="));
         for (int i = 0; i < variablesOfCurrentFactor.size(); i++) {
-            if(!variablesOfCurrentFactor.get(i).getName().equals(PlaceVarName))
-            {
+            if (!variablesOfCurrentFactor.get(i).getName().equals(PlaceVarName)) {
                 newFactorVariables.add(variablesOfCurrentFactor.get(i));
             }
         }
 
 
-        return new Factor(newFactorVariables,newMap);
+        return new Factor(newFactorVariables, newMap);
     }
 
     /**
      * Private function to print matrix
+     *
      * @param matrix
      */
     private static void printMatrix(String[][] matrix) {
@@ -414,5 +393,22 @@ public class Factor {
             }
             System.out.println();
         }
+    }
+
+    public int getIndex() {
+        return (-1) * index;
+    }
+
+
+    public String getName(Factor factor) {
+        return name;
+    }
+}
+class NameComparator implements Comparator<Factor> {
+
+    // override the compare() method
+    public int compare(Factor s1, Factor s2)
+    {
+        return s1.name.compareTo(s2.name);
     }
 }
