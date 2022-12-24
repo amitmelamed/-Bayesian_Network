@@ -594,6 +594,7 @@ public class Query {
             //In Algorithm 3 - We use different sort to better running time
             relevantHidden.sort(Comparator.comparing(Variable::getName));
 
+            Collections.sort(newFactors, new NameComparator());
 
             for (int i = 0; i < newFactors.size(); i++) {
                 System.out.println(newFactors.get(i).table);
@@ -601,8 +602,8 @@ public class Query {
             //For each H in Hidden
             for (int i = 0; i < relevantHidden.size(); i++) {
 
-
                 Collections.sort(newFactors, new NameComparator());
+
 
 
                 for (int j = 0; j < newFactors.size(); j++) {
@@ -783,9 +784,13 @@ public class Query {
             for (int i = 0; i < newFactors.size(); i++) {
                 System.out.println(newFactors.get(i).table);
             }
+            Collections.sort(newFactors, new NameComparator());
+
             //For each H in Hidden
             for (int i = 0; i < relevantHidden.size(); i++) {
                 Collections.sort(newFactors, new NameComparator());
+
+
                 for (int j = 0; j < relevantHidden.size(); j++) {
                     relevantHidden.get(j).heuristicFactor = 0;
                 }
@@ -880,159 +885,19 @@ public class Query {
                 // Printing all elements of a Map
                 sum += set.getValue();
             }
-            double alpha = 1 / sum;
 
+            double alpha = 1 / sum;
             double final_calc = factor.table.get(query.getName() + "=" + queryOutCome) * alpha;
             final_calc = final_calc * 100000;
             final_calc = Math.round(final_calc);
             final_calc = final_calc / 100000;
             network.outputFileWriter.println(final_calc + "," + algorithm_2_add_count + "," + algorithm_2_multi_count);
 
-
         } catch (Exception e) {
             System.out.println("ERROR");
             algorithm_1();
         }
     }
-
-    private void algorithm_2_second_try() throws Exception {
-
-        //Find out hiddens variables.
-        ArrayList<Variable> hidden = new ArrayList<>();
-        //Construct Hidden array
-        for (int i = 0; i < BayesianNetwork.getNetwork().size(); i++) {
-            boolean exist = false;
-            for (int j = 0; j < evidences.size(); j++) {
-                if (BayesianNetwork.getNetwork().get(i).getName().equals(evidences.get(j).getName())) {
-                    exist = true;
-                }
-            }
-            if (!exist && !Objects.equals(BayesianNetwork.getNetwork().get(i).getName(), query.getName())) {
-                hidden.add(BayesianNetwork.getNetwork().get(i));
-            }
-        }
-
-        //Remove Irrelevant Hiddens
-        ArrayList<Variable> relevantHidden = new ArrayList<>();
-        //Remove unnecessary hidden variables
-        for (int i = 0; i < hidden.size(); i++) {
-            boolean isAncestor = false;
-            if (isAncestor(query, hidden.get(i))) {
-                isAncestor = true;
-            }
-            for (int j = 0; j < evidences.size(); j++) {
-                if (isAncestor(evidences.get(j), hidden.get(i))) {
-                    isAncestor = true;
-                }
-            }
-            if (isAncestor) {
-                relevantHidden.add(hidden.get(i));
-            }
-        }
-
-        ArrayList<Factor> factors = new ArrayList<>();
-        factors.add(query.factor);
-        for (int i = 0; i < evidences.size(); i++) {
-            factors.add(evidences.get(i).factor);
-        }
-
-        //Place evidences
-        for (int i = 0; i < factors.size(); i++) {
-            Factor currentFactor = factors.get(i);
-            String evidenceAndOutcome;
-            for (int j = 0; j < evidences.size(); j++) {
-                evidenceAndOutcome = evidences.get(j).getName() + "=" + evidencesOutComes.get(j);
-                currentFactor = currentFactor.placeEvidence(evidenceAndOutcome);
-            }
-            factors.set(i, currentFactor);
-        }
-
-        //Remove all Factors that after placing evidences became 1 line
-        ArrayList<Factor> newFactors = new ArrayList<>();
-        for (int i = 0; i < factors.size(); i++) {
-            if (factors.get(i).variablesOfCurrentFactor.size() != 0) {
-                newFactors.add(factors.get(i));
-            }
-        }
-
-
-        //Sort Hidden variables by alphabet
-        //In Algorithm 3 - We use different sort to better running time
-        relevantHidden.sort(Comparator.comparing(Variable::getName));
-
-        for (int i = 0; i < relevantHidden.size(); i++) {
-            //Current H
-            Variable H = relevantHidden.get(i);
-            //Classify Factors - Contain H / Not Contain H
-            ArrayList<Factor> factorsWithH = new ArrayList<>();
-            ArrayList<Factor> factorsWithoutH = new ArrayList<>();
-            for (int j = 0; j < newFactors.size(); j++) {
-                boolean containH = false;
-                Factor currentFactor = newFactors.get(j);
-                for (int k = 0; k < currentFactor.variables_names.size(); k++) {
-                    if (H.getName().equals(currentFactor.variables_names.get(k))) {
-                        containH = true;
-                    }
-                }
-                if (containH) {
-                    factorsWithH.add(currentFactor);
-                } else {
-                    factorsWithoutH.add(currentFactor);
-                }
-            }
-            factorsWithH.sort(Comparator.comparing(Factor::getIndex));
-            Factor joinedFactor;
-            if (factorsWithH.size() == 1) {
-                joinedFactor = factorsWithH.get(0);
-                joinedFactor = joinedFactor.Eliminate(H.getName(), this);
-                newFactors = new ArrayList<>();
-                newFactors.addAll(factorsWithoutH);
-                newFactors.add(joinedFactor);
-
-            } else if (factorsWithH.size() > 1) {
-                joinedFactor = factorsWithH.get(0);
-                for (int j = 1; j < factorsWithH.size(); j++) {
-                    joinedFactor = Factor.Join(joinedFactor, factorsWithH.get(j), this);
-                }
-                joinedFactor = joinedFactor.Eliminate(H.getName(), this);
-                newFactors = new ArrayList<>();
-                newFactors.addAll(factorsWithoutH);
-                newFactors.add(joinedFactor);
-
-            }
-        }
-        //Join all remeining factors
-        Factor factor = newFactors.get(0);
-        for (int i = 1; i < newFactors.size(); i++) {
-            factor = Factor.Join(factor, newFactors.get(i), this);
-        }
-        //Normilaze
-
-        Double sum = 0.0;
-        for (Map.Entry<String, Double> set : factor.table.entrySet()) {
-
-            if (sum != 0) {
-                algorithm_2_add_count++;
-            }
-            // Printing all elements of a Map
-            sum += set.getValue();
-        }
-        double alpha = 1 / sum;
-
-        System.out.println(factor.table);
-        System.out.println(query.getName() + "=" + queryOutCome);
-        double final_calc = factor.table.get(query.getName() + "=" + queryOutCome) * alpha;
-        final_calc = final_calc * 100000;
-        final_calc = Math.round(final_calc);
-        final_calc = final_calc / 100000;
-        network.outputFileWriter.println(final_calc + "," + algorithm_2_add_count + "," + algorithm_2_multi_count);
-
-
-    }
-
 }
 
 
-//Sort Hidden variables by alphabet
-//In Algorithm 3 - We use different sort to better running time
-//            hidden.sort(Comparator.comparing(Variable::getParentCount));

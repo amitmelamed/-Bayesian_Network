@@ -409,6 +409,14 @@ class NameComparator implements Comparator<Factor> {
     // override the compare() method
     public int compare(Factor s1, Factor s2)
     {
+        if(s1.table.size()<s2.table.size())
+        {
+            return -1;
+        }
+        else if (s1.table.size()>s2.table.size())
+        {
+            return 1;
+        }
         return s1.name.compareTo(s2.name);
     }
 }
